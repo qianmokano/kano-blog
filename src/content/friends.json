@@ -1,0 +1,8 @@
+{
+	"template": {
+		"name": "朋友名称",
+		"description": "将这条模板复制为新的键，并填写朋友信息。",
+		"url": "https://example.com",
+		"hidden": true
+	}
+}

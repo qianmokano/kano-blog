@@ -1,0 +1,31 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+	project: CollectionEntry<'projects'>;
+	headingLevel?: 'h2' | 'h3';
+}
+
+const { project, headingLevel: Heading = 'h2' } = Astro.props;
+---
+
+<li class="content-card project-card" data-pagefind-ignore>
+	<div>
+		<div class="content-meta">
+			<span>{project.data.period}</span>
+			<span class="status-pill">{project.data.status}</span>
+		</div>
+		<Heading><a href={`/projects/${project.id}`}>{project.data.title}</a></Heading>
+		<p>{project.data.description}</p>
+		{
+			project.data.tech.length > 0 && (
+				<ul class="tech-list" aria-label="技术栈">
+					{project.data.tech.map((item) => (
+						<li>{item}</li>
+					))}
+				</ul>
+			)
+		}
+	</div>
+	<span class="content-arrow" aria-hidden="true">↗</span>
+</li>

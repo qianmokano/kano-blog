@@ -1,0 +1,58 @@
+---
+import { siteConfig } from '@/lib/site';
+
+const repoId = import.meta.env.PUBLIC_GISCUS_REPO_ID;
+const categoryId = import.meta.env.PUBLIC_GISCUS_CATEGORY_ID;
+const enabled = Boolean(repoId && categoryId);
+---
+
+<section class="comments" aria-labelledby="comments-title" data-pagefind-ignore>
+	<h2 id="comments-title">评论</h2>
+	{
+		enabled ? (
+			<script
+				is:inline
+				src="https://giscus.app/client.js"
+				data-repo={siteConfig.giscus.repo}
+				data-repo-id={repoId}
+				data-category={siteConfig.giscus.category}
+				data-category-id={categoryId}
+				data-mapping="pathname"
+				data-strict="1"
+				data-reactions-enabled="1"
+				data-emit-metadata="0"
+				data-input-position="bottom"
+				data-theme="preferred_color_scheme"
+				data-lang="zh-CN"
+				data-loading="lazy"
+				crossorigin="anonymous"
+				async
+			/>
+		) : import.meta.env.DEV ? (
+			<p class="comments-notice">
+				设置 PUBLIC_GISCUS_REPO_ID 与 PUBLIC_GISCUS_CATEGORY_ID 后启用评论。
+			</p>
+		) : null
+	}
+</section>
+
+<script is:inline>
+	(() => {
+		const getGiscusTheme = () => {
+			const selected = document.documentElement.dataset.theme;
+			if (selected === 'light' || selected === 'dark') return selected;
+			return matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+		};
+		const sync = () =>
+			document
+				.querySelector('.giscus-frame')
+				?.contentWindow?.postMessage(
+					{ giscus: { setConfig: { theme: getGiscusTheme() } } },
+					'https://giscus.app',
+				);
+		document
+			.querySelector('[data-theme-toggle]')
+			?.addEventListener('click', () => setTimeout(sync));
+		matchMedia('(prefers-color-scheme: dark)').addEventListener('change', sync);
+	})();
+</script>

@@ -1,0 +1,49 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+
+const friends = (await getCollection('friends'))
+	.filter((friend) => !friend.data.hidden)
+	.sort((a, b) => a.data.name.localeCompare(b.data.name, 'zh-CN'));
+---
+
+<BaseLayout title="友链" description="朋友们在互联网上的住处。">
+	<section class="page-section shell">
+		<header class="page-header">
+			<p class="eyebrow">Friends</p>
+			<h1>友链</h1>
+			<p>朋友们在互联网上认真搭建的住处。</p>
+		</header>
+		{
+			friends.length > 0 ? (
+				<ul class="friend-grid">
+					{friends.map((friend) => (
+						<li>
+							<a href={friend.data.url} rel="friend noreferrer">
+								<span class="friend-avatar">
+									{friend.data.avatar ? (
+										<img src={friend.data.avatar} alt="" loading="lazy" />
+									) : (
+										friend.data.name.slice(0, 1)
+									)}
+								</span>
+								<span>
+									<strong>{friend.data.name}</strong>
+									<small>{friend.data.description}</small>
+								</span>
+								<span aria-hidden="true">↗</span>
+							</a>
+						</li>
+					))}
+				</ul>
+			) : (
+				<div class="empty-state">
+					<>
+						<p>友链正在整理中。</p>
+						<p>如果你也在持续写作，欢迎通过 GitHub 与我联系。</p>
+					</>
+				</div>
+			)
+		}
+	</section>
+</BaseLayout>

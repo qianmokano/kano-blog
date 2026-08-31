@@ -1,17 +1,88 @@
 ---
+import NoteCard from '@/components/NoteCard.astro';
+import PostCard from '@/components/PostCard.astro';
+import ProjectCard from '@/components/ProjectCard.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getBlogPosts, getNotes, getProjects } from '@/lib/content';
+import { siteConfig } from '@/lib/site';
 
+const [posts, notes, projects] = await Promise.all([getBlogPosts(), getNotes(), getProjects()]);
+const featuredPosts = posts.filter((post) => post.data.featured).slice(0, 4);
+const displayedPosts = featuredPosts.length > 0 ? featuredPosts : posts.slice(0, 4);
+const featuredProjects = projects.filter((project) => project.data.featured).slice(0, 3);
+const displayedProjects = featuredProjects.length > 0 ? featuredProjects : projects.slice(0, 3);
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout>
+	<section class="home-hero shell">
+		<div class="hero-copy">
+			<p class="eyebrow">Developer · Writer · Builder</p>
+			<h1>把复杂的事情<br />想清楚，写下来。</h1>
+			<p>{siteConfig.tagline} 这里收录我的技术文章、项目实践与正在形成的想法。</p>
+			<div class="hero-actions">
+				<a class="button primary" href="/blog">开始阅读</a>
+				<a class="button" href="/about">关于我</a>
+			</div>
+		</div>
+		<div class="hero-mark" aria-hidden="true">
+			<span>K</span>
+			<div class="hero-orbit"></div>
+		</div>
+	</section>
+
+	<div class="home-sections shell">
+		<section>
+			<div class="section-heading">
+				<div><p class="eyebrow">Writing</p><h2>精选文章</h2></div>
+				<a href="/blog">查看全部 →</a>
+			</div>
+			{
+				displayedPosts.length > 0 ? (
+					<ul class="content-list">
+						{displayedPosts.map((post) => (
+							<PostCard post={post} headingLevel="h3" />
+						))}
+					</ul>
+				) : (
+					<p class="empty-state">文章正在整理中。</p>
+				)
+			}
+		</section>
+
+		<section>
+			<div class="section-heading">
+				<div><p class="eyebrow">Building</p><h2>项目</h2></div>
+				<a href="/projects">查看全部 →</a>
+			</div>
+			{
+				displayedProjects.length > 0 ? (
+					<ul class="content-list">
+						{displayedProjects.map((project) => (
+							<ProjectCard project={project} headingLevel="h3" />
+						))}
+					</ul>
+				) : (
+					<p class="empty-state">项目正在整理中。</p>
+				)
+			}
+		</section>
+
+		<section>
+			<div class="section-heading">
+				<div><p class="eyebrow">Notes</p><h2>最近笔记</h2></div>
+				<a href="/notes">查看全部 →</a>
+			</div>
+			{
+				notes.length > 0 ? (
+					<ul class="content-list compact-list">
+						{notes.slice(0, 5).map((note) => (
+							<NoteCard note={note} />
+						))}
+					</ul>
+				) : (
+					<p class="empty-state">笔记正在整理中。</p>
+				)
+			}
+		</section>
+	</div>
+</BaseLayout>

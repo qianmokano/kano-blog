@@ -1,0 +1,28 @@
+---
+import ProjectCard from '@/components/ProjectCard.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getProjects } from '@/lib/content';
+
+const projects = await getProjects();
+---
+
+<BaseLayout title="项目" description="正在构建、已经完成，以及值得复盘的项目。">
+	<section class="page-section shell">
+		<header class="page-header">
+			<p class="eyebrow">Building</p>
+			<h1>项目</h1>
+			<p>我正在构建、已经完成，以及值得记录实现过程的东西。</p>
+		</header>
+		{
+			projects.length > 0 ? (
+				<ul class="content-list">
+					{projects.map((project) => (
+						<ProjectCard project={project} />
+					))}
+				</ul>
+			) : (
+				<p class="empty-state">项目正在整理中。</p>
+			)
+		}
+	</section>
+</BaseLayout>

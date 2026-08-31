@@ -1,0 +1,28 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="搜索" description="搜索文章、笔记和项目。" noindex>
+	<section class="page-section reading-shell search-page" data-search-root>
+		<header class="page-header compact-header">
+			<p class="eyebrow">Search</p>
+			<h1>搜索</h1>
+			<p>搜索文章、笔记和项目。索引完全在浏览器中运行。</p>
+		</header>
+		<label class="search-field large-search-field">
+			<span class="sr-only">搜索文章、笔记和项目</span>
+			<svg viewBox="0 0 24 24" aria-hidden="true"
+				><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg
+			>
+			<input
+				type="search"
+				data-pagefind-input
+				placeholder="输入关键词…"
+				autofocus
+				autocomplete="off"
+			/>
+		</label>
+		<p class="search-status" data-pagefind-status aria-live="polite">输入关键词开始搜索</p>
+		<div class="search-results page-search-results" data-pagefind-results></div>
+	</section>
+</BaseLayout>

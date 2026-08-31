@@ -1,0 +1,40 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import ArticleLayout from '@/layouts/ArticleLayout.astro';
+import { getBlogPosts } from '@/lib/content';
+
+interface Props {
+	post: CollectionEntry<'blog'>;
+	previous?: CollectionEntry<'blog'>;
+	next?: CollectionEntry<'blog'>;
+	related: CollectionEntry<'blog'>[];
+}
+
+export async function getStaticPaths() {
+	const posts = await getBlogPosts();
+	return posts.map((post, index) => {
+		const tags = new Set(post.data.tags);
+		const related = posts
+			.filter((candidate) => candidate.id !== post.id)
+			.map((candidate) => ({
+				candidate,
+				score: candidate.data.tags.filter((tag) => tags.has(tag)).length,
+			}))
+			.filter(({ score }) => score > 0)
+			.sort((a, b) => b.score - a.score)
+			.slice(0, 3)
+			.map(({ candidate }) => candidate);
+		return {
+			params: { slug: post.id },
+			props: { post, previous: posts[index + 1], next: posts[index - 1], related },
+		};
+	});
+}
+
+const { post, previous, next, related } = Astro.props;
+const { Content, headings } = await render(post);
+---
+
+<ArticleLayout post={post} headings={headings} previous={previous} next={next} related={related}>
+	<Content />
+</ArticleLayout>

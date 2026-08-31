@@ -1,0 +1,28 @@
+---
+import NoteCard from '@/components/NoteCard.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getNotes } from '@/lib/content';
+
+const notes = await getNotes();
+---
+
+<BaseLayout title="笔记" description="短一些、仍值得留下的想法。">
+	<section class="page-section shell">
+		<header class="page-header">
+			<p class="eyebrow">Notes</p>
+			<h1>笔记</h1>
+			<p>不必扩展成长文，但值得被记住和再次找到的片段。</p>
+		</header>
+		{
+			notes.length > 0 ? (
+				<ul class="content-list compact-list">
+					{notes.map((note) => (
+						<NoteCard note={note} />
+					))}
+				</ul>
+			) : (
+				<p class="empty-state">还没有发布笔记。</p>
+			)
+		}
+	</section>
+</BaseLayout>

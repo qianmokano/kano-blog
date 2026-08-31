@@ -1,0 +1,18 @@
+---
+import { siteConfig } from '@/lib/site';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+	<div class="shell footer-inner">
+		<p>© {year} {siteConfig.name}. 保持简单，持续记录。</p>
+		<nav aria-label="页脚导航">
+			<a href="/rss.xml">RSS</a>
+			<a href="/friends">友链</a>
+			<a href="/uses">Uses</a>
+			<a href="/now">Now</a>
+			<a href={siteConfig.socials.github} rel="me noreferrer">GitHub</a>
+		</nav>
+	</div>
+</footer>

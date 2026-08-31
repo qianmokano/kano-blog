@@ -1,0 +1,32 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import PostCard from '@/components/PostCard.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getBlogPosts, groupPostsByTag } from '@/lib/content';
+
+interface Props {
+	name: string;
+	posts: CollectionEntry<'blog'>[];
+}
+
+export async function getStaticPaths() {
+	const groups = groupPostsByTag(await getBlogPosts());
+	return [...groups.entries()].map(([slug, group]) => ({
+		params: { tag: slug },
+		props: group,
+	}));
+}
+
+const { name, posts } = Astro.props;
+---
+
+<BaseLayout title={`标签：${name}`} description={`所有带有“${name}”标签的文章。`}>
+	<section class="page-section shell">
+		<header class="page-header compact-header">
+			<p class="eyebrow">Tag</p>
+			<h1>#{name}</h1>
+			<p>共 {posts.length} 篇文章。</p>
+		</header>
+		<ul class="content-list">{posts.map((post) => <PostCard post={post} />)}</ul>
+	</section>
+</BaseLayout>

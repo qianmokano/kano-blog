@@ -1,0 +1,109 @@
+---
+import '@fontsource-variable/inter';
+import '@fontsource-variable/jetbrains-mono';
+import '@/styles/global.css';
+import BaseHead from '@/components/BaseHead.astro';
+import Footer from '@/components/Footer.astro';
+import Header from '@/components/Header.astro';
+import SearchDialog from '@/components/SearchDialog.astro';
+import { siteConfig } from '@/lib/site';
+
+interface Props {
+	title?: string;
+	description?: string;
+	image?: string;
+	type?: 'website' | 'article';
+	noindex?: boolean;
+	structuredData?: Record<string, unknown> | Record<string, unknown>[];
+	mainClass?: string;
+}
+
+const { mainClass = '', ...headProps } = Astro.props;
+const websiteSchema = {
+	'@context': 'https://schema.org',
+	'@type': 'WebSite',
+	name: siteConfig.name,
+	url: siteConfig.url,
+	description: siteConfig.description,
+	inLanguage: siteConfig.locale,
+	author: {
+		'@type': 'Person',
+		name: siteConfig.author,
+		url: siteConfig.socials.github,
+	},
+};
+---
+
+<!doctype html>
+<html lang={siteConfig.locale}>
+	<head>
+		<BaseHead {...headProps} structuredData={headProps.structuredData ?? websiteSchema} />
+	</head>
+	<body>
+		<a class="skip-link" href="#main-content">跳到正文</a>
+		<Header />
+		<main id="main-content" class={mainClass} tabindex="-1">
+			<slot />
+		</main>
+		<Footer />
+		<SearchDialog />
+		<script is:inline>
+			(() => {
+				const root = document.documentElement;
+				const themes = ['system', 'light', 'dark'];
+				const labels = {
+					system: '当前跟随系统，点击切换为浅色',
+					light: '当前为浅色，点击切换为深色',
+					dark: '当前为深色，点击切换为跟随系统',
+				};
+				const applyTheme = (theme) => {
+					root.dataset.theme = theme;
+					root.style.colorScheme = theme === 'system' ? 'light dark' : theme;
+					try {
+						if (theme === 'system') localStorage.removeItem('theme');
+						else localStorage.setItem('theme', theme);
+					} catch {}
+					document
+						.querySelectorAll('[data-theme-toggle]')
+						.forEach((button) => button.setAttribute('aria-label', labels[theme]));
+				};
+				document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
+					button.addEventListener('click', () => {
+						const current = root.dataset.theme || 'system';
+						applyTheme(themes[(themes.indexOf(current) + 1) % themes.length]);
+					});
+				});
+				applyTheme(root.dataset.theme || 'system');
+
+				const dialog = document.querySelector('[data-search-dialog]');
+				const input = dialog?.querySelector('[data-pagefind-input]');
+				const openSearch = () => {
+					if (dialog instanceof HTMLDialogElement) {
+						dialog.showModal();
+						requestAnimationFrame(() => input?.focus());
+					}
+				};
+				const closeSearch = () => {
+					if (dialog instanceof HTMLDialogElement) dialog.close();
+				};
+				document
+					.querySelectorAll('[data-search-open]')
+					.forEach((button) => button.addEventListener('click', openSearch));
+				dialog?.querySelector('[data-search-close]')?.addEventListener('click', closeSearch);
+				dialog?.addEventListener('click', (event) => {
+					if (event.target === dialog) closeSearch();
+				});
+				document.addEventListener('keydown', (event) => {
+					if (
+						(event.key === '/' && !/input|textarea/i.test(document.activeElement?.tagName || '')) ||
+						((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k')
+					) {
+						event.preventDefault();
+						openSearch();
+					}
+				});
+			})();
+		</script>
+		<script is:inline src="/scripts/search.js"></script>
+	</body>
+</html>

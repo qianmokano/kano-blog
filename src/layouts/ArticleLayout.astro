@@ -1,0 +1,151 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Giscus from '@/components/Giscus.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { formatDate, getReadingTime, normalizeTagSlug } from '@/lib/content';
+import { siteConfig } from '@/lib/site';
+
+interface Props {
+	post: CollectionEntry<'blog'>;
+	headings: { depth: number; slug: string; text: string }[];
+	previous?: CollectionEntry<'blog'>;
+	next?: CollectionEntry<'blog'>;
+	related?: CollectionEntry<'blog'>[];
+}
+
+const { post, headings, previous, next, related = [] } = Astro.props;
+const articleSchema = {
+	'@context': 'https://schema.org',
+	'@type': 'BlogPosting',
+	headline: post.data.title,
+	description: post.data.description,
+	datePublished: post.data.publishedAt.toISOString(),
+	dateModified: (post.data.updatedAt ?? post.data.publishedAt).toISOString(),
+	inLanguage: siteConfig.locale,
+	mainEntityOfPage: new URL(`/blog/${post.id}`, siteConfig.url).toString(),
+	author: { '@type': 'Person', name: siteConfig.author, url: siteConfig.socials.github },
+};
+const toc = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
+---
+
+<BaseLayout
+	title={post.data.title}
+	description={post.data.description}
+	type="article"
+	structuredData={articleSchema}
+>
+	<article class="article-page" data-pagefind-body data-pagefind-meta="type:文章">
+		<header class="article-header reading-shell">
+			<div class="content-meta">
+				<time datetime={post.data.publishedAt.toISOString()}
+					>{formatDate(post.data.publishedAt)}</time
+				>
+				<span>{getReadingTime(post.body ?? '')} 分钟阅读</span>
+				{post.data.updatedAt && <span>更新于 {formatDate(post.data.updatedAt)}</span>}
+			</div>
+			<h1 data-pagefind-meta="title">{post.data.title}</h1>
+			<p>{post.data.description}</p>
+			<ul class="tag-list" aria-label="标签">
+				{
+					post.data.tags.map((tag) => (
+						<li>
+							<a href={`/tags/${normalizeTagSlug(tag)}`}>{tag}</a>
+						</li>
+					))
+				}
+			</ul>
+		</header>
+
+		<div class:list={['article-grid shell', { 'without-toc': toc.length === 0 }]}>
+			<div class="prose"><slot /></div>
+			{
+				toc.length > 0 && (
+					<aside class="article-toc" data-pagefind-ignore>
+						<p class="eyebrow">On this page</p>
+						<nav aria-label="文章目录">
+							{toc.map((heading) => (
+								<a class={`depth-${heading.depth}`} href={`#${heading.slug}`}>
+									{heading.text}
+								</a>
+							))}
+						</nav>
+					</aside>
+				)
+			}
+		</div>
+
+		<nav class="article-neighbors reading-shell" aria-label="相邻文章" data-pagefind-ignore>
+			{
+				previous ? (
+					<a href={`/blog/${previous.id}`}>
+						<>
+							<span>← 上一篇</span>
+							<strong>{previous.data.title}</strong>
+						</>
+					</a>
+				) : (
+					<span />
+				)
+			}
+			{
+				next ? (
+					<a class="next" href={`/blog/${next.id}`}>
+						<>
+							<span>下一篇 →</span>
+							<strong>{next.data.title}</strong>
+						</>
+					</a>
+				) : (
+					<span />
+				)
+			}
+		</nav>
+		{
+			related.length > 0 && (
+				<section class="related-posts reading-shell" data-pagefind-ignore>
+					<p class="eyebrow">Keep reading</p>
+					<h2>相关文章</h2>
+					<ul>
+						{related.map((item) => (
+							<li>
+								<a href={`/blog/${item.id}`}>
+									{item.data.title}
+									<span aria-hidden="true">↗</span>
+								</a>
+							</li>
+						))}
+					</ul>
+				</section>
+			)
+		}
+		{
+			post.data.comments && (
+				<div class="reading-shell">
+					<Giscus />
+				</div>
+			)
+		}
+	</article>
+</BaseLayout>
+
+<script>
+	document.querySelectorAll<HTMLElement>('.prose pre').forEach((block) => {
+		if (block.querySelector('.copy-code')) return;
+		const button = document.createElement('button');
+		button.type = 'button';
+		button.className = 'copy-code';
+		button.textContent = '复制';
+		button.setAttribute('aria-label', '复制代码');
+		button.addEventListener('click', async () => {
+			const code = block.querySelector('code')?.textContent ?? '';
+			try {
+				await navigator.clipboard.writeText(code);
+				button.textContent = '已复制';
+			} catch {
+				button.textContent = '复制失败';
+			}
+			setTimeout(() => (button.textContent = '复制'), 1600);
+		});
+		block.append(button);
+	});
+</script>

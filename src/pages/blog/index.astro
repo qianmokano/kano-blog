@@ -1,0 +1,32 @@
+---
+import Pagination from '@/components/Pagination.astro';
+import PostCard from '@/components/PostCard.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getBlogPosts, paginate } from '@/lib/content';
+import { POSTS_PER_PAGE } from '@/lib/site';
+
+const posts = await getBlogPosts();
+const page = paginate(posts, 1, POSTS_PER_PAGE);
+---
+
+<BaseLayout title="文章" description="软件开发、项目实践与持续学习。">
+	<section class="page-section shell">
+		<header class="page-header">
+			<p class="eyebrow">Writing</p>
+			<h1>文章</h1>
+			<p>关于软件开发、工程实践，以及在解决问题过程中形成的认识。</p>
+		</header>
+		{
+			page.items.length > 0 ? (
+				<ul class="content-list">
+					{page.items.map((post) => (
+						<PostCard post={post} />
+					))}
+				</ul>
+			) : (
+				<p class="empty-state">还没有发布文章。</p>
+			)
+		}
+		<Pagination currentPage={page.currentPage} totalPages={page.totalPages} basePath="/blog" />
+	</section>
+</BaseLayout>

@@ -1,0 +1,32 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { formatDate, getNotes } from '@/lib/content';
+
+interface Props {
+	note: CollectionEntry<'notes'>;
+}
+
+export async function getStaticPaths() {
+	return (await getNotes()).map((note) => ({ params: { slug: note.id }, props: { note } }));
+}
+
+const { note } = Astro.props;
+const { Content } = await render(note);
+---
+
+<BaseLayout title={note.data.title} description={`Kano 的笔记：${note.data.title}`} type="article">
+	<article
+		class="page-section reading-shell prose-page"
+		data-pagefind-body
+		data-pagefind-meta="type:笔记"
+	>
+		<header class="prose-header">
+			<p class="eyebrow">Note</p>
+			<h1 data-pagefind-meta="title">{note.data.title}</h1>
+			<time datetime={note.data.publishedAt.toISOString()}>{formatDate(note.data.publishedAt)}</time
+			>
+		</header>
+		<div class="prose"><Content /></div>
+	</article>
+</BaseLayout>

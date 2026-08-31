@@ -1,0 +1,36 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { formatDate, getReadingTime, normalizeTagSlug } from '@/lib/content';
+
+interface Props {
+	post: CollectionEntry<'blog'>;
+	headingLevel?: 'h2' | 'h3';
+}
+
+const { post, headingLevel: Heading = 'h2' } = Astro.props;
+---
+
+<li class="content-card" data-pagefind-ignore>
+	<div>
+		<div class="content-meta">
+			<time datetime={post.data.publishedAt.toISOString()}>{formatDate(post.data.publishedAt)}</time
+			>
+			<span>{getReadingTime(post.body ?? '')} 分钟阅读</span>
+			{post.data.draft && <span>草稿</span>}
+		</div>
+		<Heading><a href={`/blog/${post.id}`}>{post.data.title}</a></Heading>
+		<p>{post.data.description}</p>
+		{
+			post.data.tags.length > 0 && (
+				<ul class="tag-list" aria-label="标签">
+					{post.data.tags.map((tag) => (
+						<li>
+							<a href={`/tags/${normalizeTagSlug(tag)}`}>{tag}</a>
+						</li>
+					))}
+				</ul>
+			)
+		}
+	</div>
+	<span class="content-arrow" aria-hidden="true">↗</span>
+</li>
