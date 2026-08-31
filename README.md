@@ -70,14 +70,14 @@ Giscus 依赖公开仓库 `qianmokano/kano-blog`：
 2. 安装 [Giscus App](https://github.com/apps/giscus)。
 3. 创建或选择 `Announcements` 分类。
 4. 通过 [giscus.app/zh-CN](https://giscus.app/zh-CN) 获取仓库与分类 ID。
-5. 复制 `.env.example` 为 `.env` 并填写：
+5. 当前仓库和分类的公开 ID 已设为默认值。迁移仓库或分类时，可复制 `.env.example` 为 `.env` 并覆盖：
 
 ```dotenv
-PUBLIC_GISCUS_REPO_ID=...
-PUBLIC_GISCUS_CATEGORY_ID=...
+PUBLIC_GISCUS_REPO_ID=R_kgDOUJftFw
+PUBLIC_GISCUS_CATEGORY_ID=DIC_kwDOUJftF84DEj-1
 ```
 
-这些 ID 是公开配置，不是访问密钥。缺少配置时，生产环境会隐藏评论区，开发环境会显示诊断信息。
+这些 ID 是公开配置，不是访问密钥。
 
 ## Cloudflare Pages
 

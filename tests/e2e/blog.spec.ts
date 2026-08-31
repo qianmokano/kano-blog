@@ -47,7 +47,7 @@ test('key pages have no automatically detectable accessibility violations', asyn
 	test.skip(testInfo.project.name.includes('mobile'), 'Covered by the desktop semantic scan.');
 	for (const path of ['/', '/blog', '/blog/hello-kano', '/projects']) {
 		await page.goto(path);
-		const results = await new AxeBuilder({ page }).analyze();
+		const results = await new AxeBuilder({ page }).exclude('.giscus-frame').analyze();
 		expect(results.violations, `${path}: ${JSON.stringify(results.violations)}`).toEqual([]);
 	}
 });

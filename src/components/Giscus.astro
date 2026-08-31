@@ -1,8 +1,8 @@
 ---
 import { siteConfig } from '@/lib/site';
 
-const repoId = import.meta.env.PUBLIC_GISCUS_REPO_ID;
-const categoryId = import.meta.env.PUBLIC_GISCUS_CATEGORY_ID;
+const repoId = import.meta.env.PUBLIC_GISCUS_REPO_ID || 'R_kgDOUJftFw';
+const categoryId = import.meta.env.PUBLIC_GISCUS_CATEGORY_ID || 'DIC_kwDOUJftF84DEj-1';
 const enabled = Boolean(repoId && categoryId);
 ---
 
@@ -28,10 +28,6 @@ const enabled = Boolean(repoId && categoryId);
 				crossorigin="anonymous"
 				async
 			/>
-		) : import.meta.env.DEV ? (
-			<p class="comments-notice">
-				设置 PUBLIC_GISCUS_REPO_ID 与 PUBLIC_GISCUS_CATEGORY_ID 后启用评论。
-			</p>
 		) : null
 	}
 </section>
