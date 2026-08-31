@@ -426,6 +426,10 @@ main {
 	border-top: 1px solid var(--line);
 }
 
+.home-sections .content-card:first-child {
+	border-top: 0;
+}
+
 .content-card:hover {
 	transform: translateX(0.3rem);
 }
