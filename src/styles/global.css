@@ -430,6 +430,10 @@ main {
 	border-top: 0;
 }
 
+.home-sections .section-heading {
+	margin-bottom: 0;
+}
+
 .content-card:hover {
 	transform: translateX(0.3rem);
 }
