@@ -549,7 +549,7 @@ main {
 	grid-template-columns: minmax(0, 1.35fr) minmax(16rem, 0.65fr);
 	gap: clamp(2rem, 8vw, 8rem);
 	align-items: center;
-	padding-block: clamp(5rem, 11vw, 9rem);
+	padding-block: clamp(3rem, 5vw, 4rem);
 }
 
 .hero-copy h1 {
