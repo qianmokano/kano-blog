@@ -7,6 +7,7 @@ import Footer from '@/components/Footer.astro';
 import Header from '@/components/Header.astro';
 import SearchDialog from '@/components/SearchDialog.astro';
 import { siteConfig } from '@/lib/site';
+import { authorSchema } from '@/lib/structured-data';
 
 interface Props {
 	title?: string;
@@ -26,11 +27,7 @@ const websiteSchema = {
 	url: siteConfig.url,
 	description: siteConfig.description,
 	inLanguage: siteConfig.locale,
-	author: {
-		'@type': 'Person',
-		name: siteConfig.author,
-		url: siteConfig.socials.github,
-	},
+	author: authorSchema,
 };
 ---
 

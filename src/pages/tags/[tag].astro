@@ -3,8 +3,10 @@ import type { CollectionEntry } from 'astro:content';
 import PostCard from '@/components/PostCard.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { getBlogPosts, groupPostsByTag } from '@/lib/content';
+import { createBreadcrumbSchema } from '@/lib/structured-data';
 
 interface Props {
+	slug: string;
 	name: string;
 	posts: CollectionEntry<'blog'>[];
 }
@@ -13,14 +15,23 @@ export async function getStaticPaths() {
 	const groups = groupPostsByTag(await getBlogPosts());
 	return [...groups.entries()].map(([slug, group]) => ({
 		params: { tag: slug },
-		props: group,
+		props: { ...group, slug },
 	}));
 }
 
-const { name, posts } = Astro.props;
+const { slug, name, posts } = Astro.props;
+const breadcrumbSchema = createBreadcrumbSchema([
+	{ name: '首页', path: '/' },
+	{ name: '文章', path: '/blog/' },
+	{ name: `标签：${name}`, path: `/tags/${slug}/` },
+]);
 ---
 
-<BaseLayout title={`标签：${name}`} description={`所有带有“${name}”标签的文章。`}>
+<BaseLayout
+	title={`标签：${name}`}
+	description={`所有带有“${name}”标签的文章。`}
+	structuredData={breadcrumbSchema}
+>
 	<section class="page-section shell">
 		<header class="page-header compact-header">
 			<p class="eyebrow">Tag</p>

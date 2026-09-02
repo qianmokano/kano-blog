@@ -2,18 +2,30 @@
 import { getEntry, render } from 'astro:content';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { formatDate } from '@/lib/content';
+import { createProfilePageSchema } from '@/lib/structured-data';
 
 interface Props {
 	entryId: 'about' | 'uses' | 'now';
+	profilePage?: boolean;
 }
 
-const { entryId } = Astro.props;
+const { entryId, profilePage = false } = Astro.props;
 const entry = await getEntry('pages', entryId);
 if (!entry) throw new Error(`缺少页面内容：${entryId}`);
 const { Content } = await render(entry);
+const structuredData = profilePage
+	? createProfilePageSchema({
+			description: entry.data.description,
+			dateModified: entry.data.updatedAt,
+		})
+	: undefined;
 ---
 
-<BaseLayout title={entry.data.title} description={entry.data.description}>
+<BaseLayout
+	title={entry.data.title}
+	description={entry.data.description}
+	structuredData={structuredData}
+>
 	<article
 		class="page-section reading-shell prose-page"
 		data-pagefind-body

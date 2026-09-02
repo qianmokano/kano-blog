@@ -2,7 +2,7 @@
 import { render, type CollectionEntry } from 'astro:content';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { getProjects } from '@/lib/content';
-import { siteConfig } from '@/lib/site';
+import { absoluteSiteUrl, createBreadcrumbSchema } from '@/lib/structured-data';
 
 interface Props {
 	project: CollectionEntry<'projects'>;
@@ -17,21 +17,27 @@ export async function getStaticPaths() {
 
 const { project } = Astro.props;
 const { Content } = await render(project);
+const projectPath = `/projects/${project.id}/`;
 const projectSchema = {
 	'@context': 'https://schema.org',
 	'@type': 'SoftwareSourceCode',
 	name: project.data.title,
 	description: project.data.description,
 	codeRepository: project.data.repositoryUrl,
-	url: project.data.demoUrl ?? new URL(`/projects/${project.id}`, siteConfig.url).toString(),
+	url: project.data.demoUrl ?? absoluteSiteUrl(projectPath),
 	programmingLanguage: project.data.tech,
 };
+const breadcrumbSchema = createBreadcrumbSchema([
+	{ name: '首页', path: '/' },
+	{ name: '项目', path: '/projects/' },
+	{ name: project.data.title, path: projectPath },
+]);
 ---
 
 <BaseLayout
 	title={project.data.title}
 	description={project.data.description}
-	structuredData={projectSchema}
+	structuredData={[projectSchema, breadcrumbSchema]}
 >
 	<article
 		class="project-page page-section shell"

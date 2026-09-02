@@ -5,8 +5,8 @@ import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
 	site: 'https://blog.kanojyo.de',
-	trailingSlash: 'never',
-	integrations: [mdx(), sitemap()],
+	trailingSlash: 'always',
+	integrations: [mdx(), sitemap({ filter: (page) => !page.endsWith('/search/') })],
 	markdown: {
 		shikiConfig: {
 			themes: {

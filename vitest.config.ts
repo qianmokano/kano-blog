@@ -5,7 +5,7 @@ export default defineConfig({
 		include: ['tests/unit/**/*.test.ts'],
 		coverage: {
 			provider: 'v8',
-			include: ['src/lib/content-utils.ts'],
+			include: ['src/lib/content-utils.ts', 'src/lib/structured-data.ts'],
 			reporter: ['text', 'html'],
 			thresholds: {
 				branches: 80,

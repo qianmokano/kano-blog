@@ -10,11 +10,11 @@ export const siteConfig = {
 		github: 'https://github.com/qianmokano',
 	},
 	navigation: [
-		{ href: '/blog', label: '文章' },
-		{ href: '/notes', label: '笔记' },
-		{ href: '/projects', label: '项目' },
-		{ href: '/archive', label: '归档' },
-		{ href: '/about', label: '关于' },
+		{ href: '/blog/', label: '文章' },
+		{ href: '/notes/', label: '笔记' },
+		{ href: '/projects/', label: '项目' },
+		{ href: '/archive/', label: '归档' },
+		{ href: '/about/', label: '关于' },
 	],
 	giscus: {
 		repo: 'qianmokano/kano-blog',

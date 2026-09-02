@@ -6,7 +6,7 @@ interface Props {
 }
 
 const { currentPage, totalPages, basePath } = Astro.props;
-const hrefFor = (page: number) => (page === 1 ? basePath : `${basePath}/page/${page}`);
+const hrefFor = (page: number) => (page === 1 ? `${basePath}/` : `${basePath}/page/${page}/`);
 ---
 
 {

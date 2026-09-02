@@ -18,14 +18,14 @@ const { post, headingLevel: Heading = 'h2' } = Astro.props;
 			<span>{getReadingTime(post.body ?? '')} 分钟阅读</span>
 			{post.data.draft && <span>草稿</span>}
 		</div>
-		<Heading><a href={`/blog/${post.id}`}>{post.data.title}</a></Heading>
+		<Heading><a href={`/blog/${post.id}/`}>{post.data.title}</a></Heading>
 		<p>{post.data.description}</p>
 		{
 			post.data.tags.length > 0 && (
 				<ul class="tag-list" aria-label="标签">
 					{post.data.tags.map((tag) => (
 						<li>
-							<a href={`/tags/${normalizeTagSlug(tag)}`}>{tag}</a>
+							<a href={`/tags/${normalizeTagSlug(tag)}/`}>{tag}</a>
 						</li>
 					))}
 				</ul>
