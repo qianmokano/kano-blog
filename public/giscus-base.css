@@ -48,6 +48,15 @@ html {
 	padding-block: 0.85rem;
 }
 
+.gsc-comment-reactions {
+	margin-left: 0;
+}
+
+.gsc-upvote-button {
+	min-width: auto;
+	padding-left: 0;
+}
+
 .gsc-comment-author > div,
 .gsc-comment-replies-count {
 	display: none !important;
@@ -109,7 +118,7 @@ html {
 }
 
 .gsc-reply-box {
-	padding: 0.25rem 0 0 1rem;
+	padding: 0.25rem 0 0;
 	border: 0;
 	background: transparent;
 }
