@@ -10,7 +10,9 @@ async function readStructuredData(page: Page) {
 test('home exposes the main content paths', async ({ page }) => {
 	await page.goto('/');
 	await expect(page).toHaveTitle(/Kano/);
-	await expect(page.getByRole('heading', { level: 1 })).toContainText('把复杂的事情');
+	await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(
+		/Hi!👋\s+这里是kano！/,
+	);
 	await expect(page.getByRole('link', { name: '开始阅读' })).toHaveAttribute('href', '/blog/');
 	await expect(page.getByRole('heading', { name: '精选文章' })).toBeVisible();
 });
@@ -64,9 +66,9 @@ test('structured data connects profiles and page breadcrumbs', async ({ page }) 
 test('theme choice persists across navigation', async ({ page }) => {
 	await page.goto('/');
 	await page.getByRole('button', { name: /当前跟随系统/ }).click();
-	await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+	await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
 	await page.goto('/about/');
-	await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+	await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
 });
 
 test('production search returns indexed content', async ({ page }) => {
