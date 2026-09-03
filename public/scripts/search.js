@@ -43,7 +43,7 @@
 			const currentRequest = ++requestId;
 			if (!results || !status) return;
 			if (!query) {
-				status.textContent = '输入关键词开始搜索';
+				status.textContent = '';
 				results.replaceChildren();
 				return;
 			}

@@ -11,22 +11,23 @@ const featuredPosts = posts.filter((post) => post.data.featured).slice(0, 4);
 const displayedPosts = featuredPosts.length > 0 ? featuredPosts : posts.slice(0, 4);
 const featuredProjects = projects.filter((project) => project.data.featured).slice(0, 3);
 const displayedProjects = featuredProjects.length > 0 ? featuredProjects : projects.slice(0, 3);
+const heroTitle = 'Hi!👋\n这里是kano！';
 ---
 
 <BaseLayout>
 	<section class="home-hero shell">
 		<div class="hero-copy">
 			<p class="eyebrow">Developer · Writer · Builder</p>
-			<h1>把复杂的事情<br />想清楚，写下来。</h1>
+			<h1 class="hero-title" aria-label={heroTitle}>
+				<span data-typewriter data-text={heroTitle} aria-hidden="true">{heroTitle}</span><span
+					class="typewriter-cursor"
+					aria-hidden="true"></span>
+			</h1>
 			<p>{siteConfig.tagline} 这里收录我的技术文章、项目实践与正在形成的想法。</p>
 			<div class="hero-actions">
 				<a class="button primary" href="/blog/">开始阅读</a>
 				<a class="button" href="/about/">关于我</a>
 			</div>
-		</div>
-		<div class="hero-mark" aria-hidden="true">
-			<span>K</span>
-			<div class="hero-orbit"></div>
 		</div>
 	</section>
 
@@ -86,3 +87,30 @@ const displayedProjects = featuredProjects.length > 0 ? featuredProjects : proje
 		</section>
 	</div>
 </BaseLayout>
+
+<script>
+	const typewriter = document.querySelector<HTMLElement>('[data-typewriter]');
+
+	if (typewriter) {
+		const text = typewriter.dataset.text ?? typewriter.textContent ?? '';
+		const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+		if (!prefersReducedMotion) {
+			const characters = Array.from(text);
+			let characterIndex = 0;
+			typewriter.textContent = '';
+
+			const typeNextCharacter = () => {
+				typewriter.textContent += characters[characterIndex];
+				characterIndex += 1;
+
+				if (characterIndex < characters.length) {
+					const nextCharacterDelay = characters[characterIndex] === '\n' ? 650 : 110;
+					window.setTimeout(typeNextCharacter, nextCharacterDelay);
+				}
+			};
+
+			window.setTimeout(typeNextCharacter, 300);
+		}
+	}
+</script>

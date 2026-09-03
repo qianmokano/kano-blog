@@ -47,11 +47,11 @@ const websiteSchema = {
 		<script is:inline>
 			(() => {
 				const root = document.documentElement;
-				const themes = ['system', 'light', 'dark'];
+				const themes = ['system', 'dark', 'light'];
 				const labels = {
-					system: '当前跟随系统，点击切换为浅色',
-					light: '当前为浅色，点击切换为深色',
-					dark: '当前为深色，点击切换为跟随系统',
+					system: '当前跟随系统，点击切换为深色',
+					dark: '当前为深色，点击切换为浅色',
+					light: '当前为浅色，点击切换为跟随系统',
 				};
 				const applyTheme = (theme) => {
 					root.dataset.theme = theme;

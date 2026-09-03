@@ -155,4 +155,51 @@ const toc = headings.filter((heading) => heading.depth === 2 || heading.depth ==
 		});
 		block.append(button);
 	});
+
+	const toc = document.querySelector<HTMLElement>('.article-toc');
+	const prose = document.querySelector<HTMLElement>('.article-grid > .prose');
+	const tocItems = Array.from(
+		document.querySelectorAll<HTMLAnchorElement>('.article-toc a[href^="#"]'),
+	).flatMap((link) => {
+		const heading = document.getElementById(decodeURIComponent(link.hash.slice(1)));
+		return heading ? [{ heading, link }] : [];
+	});
+
+	if (toc && prose && tocItems.length > 0) {
+		let animationFrame = 0;
+
+		const updateReadingProgress = () => {
+			animationFrame = 0;
+			const readingLine = window.innerHeight * 0.25;
+			let activeItem = tocItems[0];
+
+			for (const item of tocItems) {
+				if (item.heading.getBoundingClientRect().top > readingLine) break;
+				activeItem = item;
+			}
+
+			for (const item of tocItems) {
+				if (item === activeItem) item.link.setAttribute('aria-current', 'location');
+				else item.link.removeAttribute('aria-current');
+			}
+
+			const proseTop = prose.getBoundingClientRect().top + window.scrollY;
+			const progressStart = proseTop - readingLine;
+			const progressDistance = Math.max(prose.offsetHeight - window.innerHeight * 0.5, 1);
+			const progress = Math.min(
+				Math.max((window.scrollY - progressStart) / progressDistance, 0),
+				1,
+			);
+			toc.style.setProperty('--toc-progress', `${progress * 100}%`);
+		};
+
+		const requestProgressUpdate = () => {
+			if (animationFrame) return;
+			animationFrame = window.requestAnimationFrame(updateReadingProgress);
+		};
+
+		window.addEventListener('scroll', requestProgressUpdate, { passive: true });
+		window.addEventListener('resize', requestProgressUpdate);
+		updateReadingProgress();
+	}
 </script>

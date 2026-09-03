@@ -8,9 +8,8 @@ const isActive = (href: string) =>
 
 <header class="site-header">
 	<div class="shell header-inner">
-		<a class="wordmark" href="/" aria-label={`${siteConfig.name} 首页`}>
-			<span aria-hidden="true">K</span>
-			<span class="wordmark-text">{siteConfig.name}</span>
+		<a class="wordmark" href="/" aria-label={`${siteConfig.brandName} 首页`}>
+			<span class="wordmark-text">{siteConfig.brandName}</span>
 		</a>
 
 		<nav class="desktop-nav" aria-label="主导航">
@@ -40,9 +39,19 @@ const isActive = (href: string) =>
 				data-theme-toggle
 				aria-label="切换主题"
 			>
-				<svg viewBox="0 0 24 24" aria-hidden="true"
-					><path d="M12 3v18M12 3a9 9 0 0 1 0 18A9 9 0 0 1 12 3Z"></path></svg
-				>
+				<svg class="theme-icon theme-icon-system" viewBox="0 0 24 24" aria-hidden="true">
+					<circle cx="12" cy="12" r="9"></circle>
+					<path class="theme-icon-system-fill" d="M12 3a9 9 0 0 1 0 18Z"></path>
+				</svg>
+				<svg class="theme-icon theme-icon-light" viewBox="0 0 24 24" aria-hidden="true">
+					<circle cx="12" cy="12" r="3.5"></circle>
+					<path
+						d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"
+					></path>
+				</svg>
+				<svg class="theme-icon theme-icon-dark" viewBox="0 0 24 24" aria-hidden="true">
+					<path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2Z"></path>
+				</svg>
 			</button>
 			<details class="mobile-menu">
 				<summary class="icon-button" aria-label="打开导航">
