@@ -1322,7 +1322,7 @@ main {
 	}
 
 	.home-hero {
-		min-height: auto;
+		min-height: calc(100svh - 4.4rem);
 		grid-template-columns: 1fr;
 	}
 
