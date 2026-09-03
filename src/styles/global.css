@@ -196,19 +196,33 @@ h4 {
 	z-index: 50;
 	top: 0;
 	border-bottom: 1px solid transparent;
+	background: transparent;
+}
+
+.site-header::before {
+	position: absolute;
+	z-index: 0;
+	inset: 0;
 	background: var(--surface-translucent);
 	-webkit-backdrop-filter: blur(18px) saturate(120%);
 	backdrop-filter: blur(18px) saturate(120%);
+	content: '';
+	pointer-events: none;
 }
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
 	.site-header {
 		border-color: var(--line);
+	}
+
+	.site-header::before {
 		background: var(--bg);
 	}
 }
 
 .header-inner {
+	position: relative;
+	z-index: 1;
 	display: flex;
 	height: 4.4rem;
 	align-items: center;
@@ -335,8 +349,8 @@ h4 {
 	border-radius: var(--radius-md);
 	background: var(--surface-translucent);
 	box-shadow: var(--shadow-soft);
-	-webkit-backdrop-filter: blur(20px);
-	backdrop-filter: blur(20px);
+	-webkit-backdrop-filter: blur(28px) saturate(120%);
+	backdrop-filter: blur(28px) saturate(120%);
 }
 
 .mobile-menu nav a {
