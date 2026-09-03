@@ -9,3 +9,7 @@
 
 /pagefind/*
   Cache-Control: public, max-age=3600
+
+/giscus-*.css
+  Access-Control-Allow-Origin: https://giscus.app
+  Cache-Control: public, max-age=3600

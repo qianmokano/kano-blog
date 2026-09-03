@@ -1,0 +1,76 @@
+:host,
+html {
+	--font-family-sans:
+		'Inter Variable', Inter, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+	--font-family-monospace: 'JetBrains Mono Variable', 'SFMono-Regular', Consolas, monospace;
+	--font-family-default: var(--font-family-sans);
+}
+
+* {
+	border-radius: 0 !important;
+}
+
+.gsc-main {
+	gap: 2rem;
+}
+
+.gsc-reactions {
+	padding-bottom: 2rem;
+	border-bottom: 1px solid var(--color-border-default);
+}
+
+.gsc-reactions-count,
+.gsc-comments-count {
+	font-weight: 600;
+	letter-spacing: -0.025em;
+}
+
+.gsc-comment-box-tabs {
+	background: transparent;
+}
+
+.gsc-comment-box-main,
+.gsc-comment-box-bottom {
+	margin: 0.75rem;
+}
+
+.gsc-comment-box-textarea {
+	min-height: 8rem;
+	padding: 0.8rem;
+	border-bottom-style: solid;
+	background: var(--color-canvas-default);
+}
+
+.gsc-comment-box-write:focus-within,
+.form-control:focus {
+	border-color: var(--color-fg-default);
+	outline: 1px solid var(--color-fg-default);
+	outline-offset: -1px;
+	box-shadow: none;
+}
+
+.btn {
+	font-weight: 600;
+	box-shadow: none;
+	transition:
+		color 160ms ease,
+		border-color 160ms ease,
+		background-color 160ms ease;
+}
+
+.btn:hover,
+.btn-primary,
+.btn-primary:hover,
+.btn-primary:active {
+	box-shadow: none;
+}
+
+.gsc-comment,
+.gsc-comment-box,
+.gsc-reactions-popover {
+	box-shadow: none;
+}
+
+.gsc-social-reaction-summary-item {
+	min-width: 1.75rem;
+}

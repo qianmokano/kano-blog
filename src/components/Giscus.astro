@@ -4,29 +4,23 @@ import { siteConfig } from '@/lib/site';
 const repoId = import.meta.env.PUBLIC_GISCUS_REPO_ID || 'R_kgDOUJftFw';
 const categoryId = import.meta.env.PUBLIC_GISCUS_CATEGORY_ID || 'DIC_kwDOUJftF84DEj-1';
 const enabled = Boolean(repoId && categoryId);
+const lightTheme = new URL('/giscus-light.css', siteConfig.url).href;
+const darkTheme = new URL('/giscus-dark.css', siteConfig.url).href;
 ---
 
 <section class="comments" aria-labelledby="comments-title" data-pagefind-ignore>
 	<h2 id="comments-title">评论</h2>
 	{
 		enabled ? (
-			<script
-				is:inline
-				src="https://giscus.app/client.js"
+			<div
+				class="giscus-host"
+				data-giscus-root
 				data-repo={siteConfig.giscus.repo}
 				data-repo-id={repoId}
 				data-category={siteConfig.giscus.category}
 				data-category-id={categoryId}
-				data-mapping="pathname"
-				data-strict="1"
-				data-reactions-enabled="1"
-				data-emit-metadata="0"
-				data-input-position="bottom"
-				data-theme="preferred_color_scheme"
-				data-lang="zh-CN"
-				data-loading="lazy"
-				crossorigin="anonymous"
-				async
+				data-theme-light={lightTheme}
+				data-theme-dark={darkTheme}
 			/>
 		) : null
 	}
@@ -34,21 +28,59 @@ const enabled = Boolean(repoId && categoryId);
 
 <script is:inline>
 	(() => {
+		const root = document.querySelector('[data-giscus-root]');
+		if (!(root instanceof HTMLElement) || root.dataset.initialized === 'true') return;
+		root.dataset.initialized = 'true';
+
+		const systemTheme = matchMedia('(prefers-color-scheme: dark)');
 		const getGiscusTheme = () => {
 			const selected = document.documentElement.dataset.theme;
-			if (selected === 'light' || selected === 'dark') return selected;
-			return matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+			const isDark = selected === 'dark' || (selected === 'system' && systemTheme.matches);
+			return isDark ? root.dataset.themeDark : root.dataset.themeLight;
 		};
 		const sync = () =>
-			document
+			root
 				.querySelector('.giscus-frame')
 				?.contentWindow?.postMessage(
 					{ giscus: { setConfig: { theme: getGiscusTheme() } } },
 					'https://giscus.app',
 				);
+
+		const observer = new MutationObserver(() => {
+			const frame = root.querySelector('.giscus-frame');
+			if (!(frame instanceof HTMLIFrameElement)) return;
+			frame.addEventListener('load', sync);
+			sync();
+			observer.disconnect();
+		});
+		observer.observe(root, { childList: true, subtree: true });
+
+		const script = document.createElement('script');
+		script.src = 'https://giscus.app/client.js';
+		script.async = true;
+		script.crossOrigin = 'anonymous';
+		const config = {
+			repo: root.dataset.repo,
+			'repo-id': root.dataset.repoId,
+			category: root.dataset.category,
+			'category-id': root.dataset.categoryId,
+			mapping: 'pathname',
+			strict: '1',
+			'reactions-enabled': '1',
+			'emit-metadata': '0',
+			'input-position': 'bottom',
+			theme: getGiscusTheme(),
+			lang: 'zh-CN',
+			loading: 'lazy',
+		};
+		for (const [name, value] of Object.entries(config)) {
+			if (value) script.setAttribute(`data-${name}`, value);
+		}
+		root.append(script);
+
 		document
 			.querySelector('[data-theme-toggle]')
 			?.addEventListener('click', () => setTimeout(sync));
-		matchMedia('(prefers-color-scheme: dark)').addEventListener('change', sync);
+		systemTheme.addEventListener('change', sync);
 	})();
 </script>
