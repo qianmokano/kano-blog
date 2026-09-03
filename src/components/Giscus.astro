@@ -4,8 +4,9 @@ import { siteConfig } from '@/lib/site';
 const repoId = import.meta.env.PUBLIC_GISCUS_REPO_ID || 'R_kgDOUJftFw';
 const categoryId = import.meta.env.PUBLIC_GISCUS_CATEGORY_ID || 'DIC_kwDOUJftF84DEj-1';
 const enabled = Boolean(repoId && categoryId);
-const lightTheme = new URL('/giscus-light.css', siteConfig.url).href;
-const darkTheme = new URL('/giscus-dark.css', siteConfig.url).href;
+const themeVersion = '2';
+const lightTheme = new URL(`/giscus-light.css?v=${themeVersion}`, siteConfig.url).href;
+const darkTheme = new URL(`/giscus-dark.css?v=${themeVersion}`, siteConfig.url).href;
 ---
 
 <section class="comments" aria-labelledby="comments-title" data-pagefind-ignore>

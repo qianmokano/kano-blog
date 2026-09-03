@@ -1,5 +1,5 @@
 @import url('https://giscus.app/themes/light.css');
-@import url('./giscus-base.css');
+@import url('./giscus-base.css?v=2');
 
 main {
 	--color-btn-text: #111111;
