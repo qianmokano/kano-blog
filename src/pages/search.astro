@@ -7,7 +7,7 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 		<header class="page-header compact-header">
 			<p class="eyebrow">Search</p>
 			<h1>搜索</h1>
-			<p>搜索文章、笔记和项目。索引完全在浏览器中运行。</p>
+			<p>搜索一下，假装记性很好。</p>
 		</header>
 		<label class="search-field large-search-field">
 			<span class="sr-only">搜索文章、笔记和项目</span>
@@ -22,7 +22,7 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 				autocomplete="off"
 			/>
 		</label>
-		<p class="search-status" data-pagefind-status aria-live="polite">输入关键词开始搜索</p>
+		<p class="search-status" data-pagefind-status aria-live="polite"></p>
 		<div class="search-results page-search-results" data-pagefind-results></div>
 	</section>
 </BaseLayout>
