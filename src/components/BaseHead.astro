@@ -18,9 +18,7 @@ const {
 	noindex = false,
 	structuredData,
 } = Astro.props;
-const pageTitle = title
-	? `${title} · ${siteConfig.name}`
-	: `${siteConfig.name} — ${siteConfig.tagline}`;
+const pageTitle = title ? `${title} - ${siteConfig.brandName}` : siteConfig.title;
 const canonical = new URL(Astro.url.pathname, siteConfig.url);
 const socialImage = new URL(image, siteConfig.url);
 ---
