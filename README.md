@@ -91,3 +91,9 @@ PUBLIC_GISCUS_CATEGORY_ID=DIC_kwDOUJftF84DEj-1
 首次部署成功后再绑定 `blog.kanojyo.de`。确认 Cloudflare 提供的目标记录与现有 DNS 用途后再修改 DNS，不要直接覆盖未知记录。最后在 Cloudflare 控制台启用 Web Analytics。
 
 推送和 Pull Request 会通过 GitHub Actions 执行类型检查、格式检查、单元测试、生产构建、Pagefind 搜索和 Playwright 可访问性测试。
+
+## 许可
+
+除原创内容外，本项目源代码采用 [MIT License](LICENSE)。
+
+`src/content/` 中的文章、笔记、项目说明和其他原创内容，以及相关图片与媒体文件，版权归 Kano 所有，除非文件中另有说明，否则不包含在 MIT License 的授权范围内。
