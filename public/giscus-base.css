@@ -14,6 +14,10 @@ html {
 	gap: 0;
 }
 
+.gsc-comments {
+	gap: 0;
+}
+
 .gsc-reactions,
 .gsc-comments > .gsc-header {
 	display: none;
@@ -99,14 +103,25 @@ html {
 	display: none;
 }
 
-.gsc-replies,
-.gsc-reply-box {
-	border-color: var(--color-border-default);
+.gsc-replies {
+	border-top: 0;
 	background: transparent;
 }
 
 .gsc-reply-box {
-	padding-inline: 0;
+	padding: 0.25rem 0 0 1rem;
+	border: 0;
+	background: transparent;
+}
+
+.gsc-reply-box > button {
+	width: auto;
+	padding: 0.25rem 0;
+	cursor: pointer;
+	border: 0 !important;
+	background: transparent;
+	text-decoration: underline;
+	text-underline-offset: 0.2em;
 }
 
 .gsc-comment-box-write:focus-within,
