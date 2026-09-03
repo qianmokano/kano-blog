@@ -90,6 +90,7 @@ const heroTitle = 'Hi!👋\n这里是kano！';
 
 <script>
 	const typewriter = document.querySelector<HTMLElement>('[data-typewriter]');
+	const typewriterCursor = document.querySelector<HTMLElement>('.typewriter-cursor');
 
 	if (typewriter) {
 		const text = typewriter.dataset.text ?? typewriter.textContent ?? '';
@@ -107,6 +108,8 @@ const heroTitle = 'Hi!👋\n这里是kano！';
 				if (characterIndex < characters.length) {
 					const nextCharacterDelay = characters[characterIndex] === '\n' ? 650 : 110;
 					window.setTimeout(typeNextCharacter, nextCharacterDelay);
+				} else {
+					typewriterCursor?.classList.add('is-complete');
 				}
 			};
 

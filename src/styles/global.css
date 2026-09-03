@@ -77,6 +77,30 @@ html {
 	text-rendering: optimizeLegibility;
 }
 
+@view-transition {
+	navigation: auto;
+}
+
+::view-transition-old(root) {
+	animation: page-fade-out 140ms ease-in both;
+}
+
+::view-transition-new(root) {
+	animation: page-fade-in 140ms ease-out both;
+}
+
+@keyframes page-fade-out {
+	to {
+		opacity: 0;
+	}
+}
+
+@keyframes page-fade-in {
+	from {
+		opacity: 0;
+	}
+}
+
 body {
 	margin: 0;
 	min-width: 20rem;
@@ -437,7 +461,9 @@ main {
 	gap: 1.25rem;
 	padding-block: 1.6rem;
 	border-bottom: 1px solid var(--line);
-	transition: transform 200ms var(--ease);
+	transition:
+		opacity 120ms ease,
+		transform 200ms var(--ease);
 }
 
 .content-card:first-child {
@@ -450,10 +476,6 @@ main {
 
 .home-sections .section-heading {
 	margin-bottom: 0;
-}
-
-.content-card:hover {
-	transform: translateX(0.3rem);
 }
 
 .content-card h2,
@@ -501,9 +523,21 @@ main {
 		transform 160ms var(--ease);
 }
 
-.content-card:hover .content-arrow {
-	transform: translate(0.2rem, -0.2rem);
-	color: var(--text);
+@media (hover: hover) and (pointer: fine) {
+	.content-card:hover {
+		transform: translateX(0.3rem);
+	}
+
+	.content-card:hover .content-arrow {
+		transform: translate(0.2rem, -0.2rem);
+		color: var(--text);
+	}
+}
+
+@media (hover: none), (pointer: coarse) {
+	.content-card:active {
+		opacity: 0.78;
+	}
 }
 
 .tag-list,
@@ -592,8 +626,20 @@ main {
 	animation: typewriter-cursor 0.85s steps(1, end) infinite;
 }
 
+.typewriter-cursor.is-complete {
+	animation:
+		typewriter-cursor 0.65s steps(1, end) 2,
+		typewriter-cursor-fade 220ms ease 1.3s forwards;
+}
+
 @keyframes typewriter-cursor {
 	50% {
+		opacity: 0;
+	}
+}
+
+@keyframes typewriter-cursor-fade {
+	to {
 		opacity: 0;
 	}
 }
@@ -731,6 +777,10 @@ main {
 	font-size: 0.78rem;
 	line-height: 1.45;
 	text-decoration: none;
+	transition:
+		color 150ms ease,
+		font-weight 150ms ease,
+		transform 150ms var(--ease);
 }
 
 .article-toc a:hover {
@@ -738,6 +788,7 @@ main {
 }
 
 .article-toc a[aria-current='location'] {
+	transform: translateX(0.125rem);
 	color: var(--text);
 	font-weight: 560;
 }
@@ -1364,6 +1415,11 @@ main {
 @media (prefers-reduced-motion: reduce) {
 	.typewriter-cursor {
 		display: none;
+	}
+
+	::view-transition-old(root),
+	::view-transition-new(root) {
+		animation: none;
 	}
 
 	*,
