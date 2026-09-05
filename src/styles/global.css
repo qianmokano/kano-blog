@@ -525,7 +525,7 @@ main {
 @media (hover: hover) and (pointer: fine) {
 	.content-card:hover h2 a,
 	.content-card:hover h3 a {
-		color: color-mix(in srgb, var(--text) 80%, var(--muted));
+		color: var(--muted);
 	}
 
 	.content-card:hover .content-arrow {
