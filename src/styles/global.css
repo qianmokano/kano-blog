@@ -264,9 +264,15 @@ h4 {
 .wordmark {
 	display: inline-flex;
 	align-items: center;
+	color: var(--text);
 	font-weight: 650;
 	letter-spacing: -0.025em;
 	text-decoration: none;
+}
+
+.wordmark-text {
+	/* Follow the link's animated color without starting a second transition. */
+	transition: none;
 }
 
 .desktop-nav {
