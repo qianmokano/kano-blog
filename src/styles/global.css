@@ -89,11 +89,32 @@ html {
 	navigation: auto;
 }
 
-::view-transition-old(root) {
+::view-transition-group(root),
+::view-transition-group(site-header),
+::view-transition-group(page-content) {
+	animation: none;
+}
+
+::view-transition-group(site-header) {
+	z-index: 1;
+}
+
+::view-transition-old(root),
+::view-transition-old(site-header) {
+	display: none;
+}
+
+::view-transition-new(root),
+::view-transition-new(site-header) {
+	animation: none;
+	mix-blend-mode: normal;
+}
+
+::view-transition-old(page-content) {
 	animation: page-fade-out 140ms ease-in both;
 }
 
-::view-transition-new(root) {
+::view-transition-new(page-content) {
 	animation: page-fade-in 140ms ease-out both;
 }
 
@@ -224,6 +245,7 @@ h4 {
 }
 
 .site-header {
+	view-transition-name: site-header;
 	position: sticky;
 	z-index: 50;
 	top: 0;
@@ -409,6 +431,7 @@ h4 {
 }
 
 main {
+	view-transition-name: page-content;
 	min-height: calc(100vh - 12rem);
 }
 
@@ -1436,12 +1459,16 @@ main {
 }
 
 @media (prefers-reduced-motion: reduce) {
+	@view-transition {
+		navigation: none;
+	}
+
 	.typewriter-cursor {
 		display: none;
 	}
 
-	::view-transition-old(root),
-	::view-transition-new(root) {
+	::view-transition-old(*),
+	::view-transition-new(*) {
 		animation: none;
 	}
 
