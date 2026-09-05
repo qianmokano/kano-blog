@@ -70,7 +70,9 @@
 	box-sizing: border-box;
 }
 
-:where(html, body, body *, body *::before, body *::after, body::before, body::after) {
+:where(html, body, body *),
+:where(body, body *)::before,
+:where(body, body *)::after {
 	transition: var(--theme-transition);
 }
 
