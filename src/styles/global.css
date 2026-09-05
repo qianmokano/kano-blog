@@ -18,6 +18,7 @@
 	--shadow-soft: 0 18px 60px rgb(0 0 0 / 8%);
 	--shell: 72rem;
 	--reading: 44rem;
+	--header-height: 4.4rem;
 	--radius-sm: 0;
 	--radius-md: 0;
 	--radius-lg: 0;
@@ -77,6 +78,7 @@
 }
 
 html {
+	view-transition-name: none;
 	background: var(--bg);
 	color: var(--text);
 	font-family: var(--font-sans);
@@ -89,25 +91,13 @@ html {
 	navigation: auto;
 }
 
-::view-transition-group(root),
-::view-transition-group(site-header),
+::view-transition {
+	/* Keep scrolled content snapshots below the live glass header. */
+	clip-path: inset(var(--header-height) 0 0);
+}
+
 ::view-transition-group(page-content) {
 	animation: none;
-}
-
-::view-transition-group(site-header) {
-	z-index: 1;
-}
-
-::view-transition-old(root),
-::view-transition-old(site-header) {
-	display: none;
-}
-
-::view-transition-new(root),
-::view-transition-new(site-header) {
-	animation: none;
-	mix-blend-mode: normal;
 }
 
 ::view-transition-old(page-content) {
@@ -277,7 +267,7 @@ h4 {
 	position: relative;
 	z-index: 1;
 	display: flex;
-	height: 4.4rem;
+	height: var(--header-height);
 	align-items: center;
 	justify-content: space-between;
 }
@@ -677,7 +667,7 @@ main {
 
 .home-hero {
 	display: grid;
-	min-height: min(48rem, calc(100vh - 4.4rem));
+	min-height: min(48rem, calc(100vh - var(--header-height)));
 	grid-template-columns: minmax(0, 1fr);
 	align-items: center;
 	padding-block: clamp(3rem, 5vw, 4rem);
