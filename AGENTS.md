@@ -1,22 +1,14 @@
-## Development
+# Kano Blog
 
-When starting the dev server, use background mode:
+Astro site. Use the checked-in package scripts and pnpm; dependency versions and scripts in `package.json` are authoritative.
 
-```
-astro dev --background
-```
+## Development and Verification
 
-Manage the background server with `astro dev stop`, `astro dev status`, and `astro dev logs`.
+- Start the background development server with `pnpm dev`; manage it with `pnpm dev:status`, `pnpm dev:logs`, and `pnpm dev:stop`.
+- `pnpm check` runs Astro checks, lint, and formatting checks. `pnpm build` also builds the site and Pagefind index.
+- `pnpm test` runs the configured Vitest coverage suite; `pnpm test:e2e` runs Playwright, and `pnpm test:e2e:full` builds first.
+- Select checks for the affected behavior. For text-only instructions, check links and command accuracy; use browser evidence for visual or interaction changes. Report unavailable prerequisites accurately.
 
 ## Documentation
 
-Full documentation: https://docs.astro.build
-
-Consult these guides before working on related tasks:
-
-- [Adding pages, dynamic routes, or middleware](https://docs.astro.build/en/guides/routing/)
-- [Working with Astro components](https://docs.astro.build/en/basics/astro-components/)
-- [Using React, Vue, Svelte, or other framework components](https://docs.astro.build/en/guides/framework-components/)
-- [Adding or managing content](https://docs.astro.build/en/guides/content-collections/)
-- [Adding styles or using Tailwind](https://docs.astro.build/en/guides/styling/)
-- [Supporting multiple languages](https://docs.astro.build/en/guides/internationalization/)
+Use existing code and [Astro documentation](https://docs.astro.build) to resolve relevant API questions. Load only the needed guide for routing, components, content collections, styling, framework integrations, or internationalization.
