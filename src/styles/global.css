@@ -22,6 +22,8 @@
 	--radius-md: 0;
 	--radius-lg: 0;
 	--ease: cubic-bezier(0.22, 1, 0.36, 1);
+	--theme-transition:
+		color 200ms ease, background-color 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
 }
 
 :root[data-theme='dark'] {
@@ -66,6 +68,10 @@
 *::before,
 *::after {
 	box-sizing: border-box;
+}
+
+:where(html, body, body *, body *::before, body *::after, body::before, body::after) {
+	transition: var(--theme-transition);
 }
 
 html {
@@ -283,7 +289,9 @@ h4 {
 	transform: scaleX(0);
 	background: var(--text);
 	content: '';
-	transition: transform 180ms var(--ease);
+	transition:
+		var(--theme-transition),
+		transform 180ms var(--ease);
 }
 
 .desktop-nav a:hover,
@@ -314,8 +322,7 @@ h4 {
 	color: var(--text);
 	cursor: pointer;
 	transition:
-		border-color 160ms ease,
-		background 160ms ease,
+		var(--theme-transition),
 		transform 160ms var(--ease);
 }
 
@@ -335,7 +342,10 @@ h4 {
 }
 
 .theme-toggle .theme-icon {
-	display: none;
+	grid-area: 1 / 1;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 200ms ease;
 }
 
 .theme-icon-system .theme-icon-system-fill {
@@ -346,7 +356,7 @@ h4 {
 :root[data-theme='system'] .theme-icon-system,
 :root[data-theme='light'] .theme-icon-light,
 :root[data-theme='dark'] .theme-icon-dark {
-	display: block;
+	opacity: 1;
 }
 
 .mobile-menu {
@@ -461,7 +471,9 @@ main {
 	gap: 1.25rem;
 	padding-block: 1.6rem;
 	border-bottom: 1px solid var(--line);
-	transition: opacity 120ms ease;
+	transition:
+		var(--theme-transition),
+		opacity 120ms ease;
 }
 
 .content-card:first-child {
@@ -487,7 +499,7 @@ main {
 .content-card h3 a {
 	color: color-mix(in srgb, var(--text) 60%, var(--muted));
 	text-decoration: none;
-	transition: color 160ms ease;
+	transition: var(--theme-transition);
 }
 
 .content-card h2 a::after,
@@ -519,7 +531,7 @@ main {
 	color: var(--faint);
 	font-size: 1.25rem;
 	transition:
-		color 160ms ease,
+		var(--theme-transition),
 		transform 160ms var(--ease);
 }
 
@@ -671,9 +683,8 @@ main {
 	font-weight: 520;
 	text-decoration: none;
 	transition:
-		transform 180ms var(--ease),
-		border-color 180ms ease,
-		background 180ms ease;
+		var(--theme-transition),
+		transform 180ms var(--ease);
 }
 
 .button:hover {
@@ -765,7 +776,9 @@ main {
 	height: var(--toc-progress);
 	background: var(--text);
 	content: '';
-	transition: height 100ms linear;
+	transition:
+		var(--theme-transition),
+		height 100ms linear;
 }
 
 .article-toc nav {
@@ -779,7 +792,7 @@ main {
 	line-height: 1.45;
 	text-decoration: none;
 	transition:
-		color 150ms ease,
+		var(--theme-transition),
 		font-weight 150ms ease,
 		transform 150ms var(--ease);
 }
@@ -1118,7 +1131,7 @@ main {
 	border-radius: var(--radius-md);
 	text-decoration: none;
 	transition:
-		border-color 160ms ease,
+		var(--theme-transition),
 		transform 180ms var(--ease);
 }
 
@@ -1207,6 +1220,7 @@ main {
 	color: var(--text);
 	box-shadow: var(--shadow-soft);
 	transition:
+		var(--theme-transition),
 		opacity 200ms ease,
 		transform 200ms var(--ease),
 		overlay 200ms allow-discrete,
