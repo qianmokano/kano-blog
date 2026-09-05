@@ -424,6 +424,43 @@ h4 {
 	text-decoration: none;
 }
 
+@supports selector(::details-content) {
+	.mobile-menu {
+		--menu-duration: 120ms;
+	}
+
+	.mobile-menu[open] {
+		--menu-duration: 160ms;
+	}
+
+	.mobile-menu::details-content {
+		transition: content-visibility var(--menu-duration) allow-discrete;
+	}
+
+	.mobile-menu nav {
+		opacity: 0;
+		transform: translateY(-4px);
+		pointer-events: none;
+		transition:
+			var(--theme-transition),
+			opacity var(--menu-duration) ease,
+			transform var(--menu-duration) var(--ease);
+	}
+
+	.mobile-menu[open] nav {
+		opacity: 1;
+		transform: translateY(0);
+		pointer-events: auto;
+	}
+
+	@starting-style {
+		.mobile-menu[open] nav {
+			opacity: 0;
+			transform: translateY(-4px);
+		}
+	}
+}
+
 .mobile-menu nav a:hover,
 .mobile-menu nav a[aria-current='page'] {
 	background: var(--code-bg);
@@ -1459,6 +1496,10 @@ main {
 }
 
 @media (prefers-reduced-motion: reduce) {
+	.mobile-menu::details-content {
+		transition: none;
+	}
+
 	@view-transition {
 		navigation: none;
 	}
