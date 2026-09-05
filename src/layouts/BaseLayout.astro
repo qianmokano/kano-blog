@@ -72,6 +72,17 @@ const websiteSchema = {
 				});
 				applyTheme(root.dataset.theme || 'system');
 
+				// A permanent transition name blocks the header's backdrop sampling.
+				const prepareHeaderTransition = (event) => {
+					const header = document.querySelector('.site-header');
+					if (!event.viewTransition || !(header instanceof HTMLElement)) return;
+					header.style.viewTransitionName = 'site-header';
+					const restoreBackdrop = () => header.style.removeProperty('view-transition-name');
+					event.viewTransition.finished.then(restoreBackdrop, restoreBackdrop);
+				};
+				window.addEventListener('pageswap', prepareHeaderTransition);
+				window.addEventListener('pagereveal', prepareHeaderTransition);
+
 				const dialog = document.querySelector('[data-search-dialog]');
 				const input = dialog?.querySelector('[data-pagefind-input]');
 				const openSearch = () => {

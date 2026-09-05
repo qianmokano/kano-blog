@@ -245,7 +245,6 @@ h4 {
 }
 
 .site-header {
-	view-transition-name: site-header;
 	position: sticky;
 	z-index: 50;
 	top: 0;
