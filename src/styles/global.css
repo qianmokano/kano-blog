@@ -351,6 +351,18 @@ h4 {
 	transform: translateY(-1px);
 }
 
+.icon-button:focus-visible {
+	border-color: var(--text);
+	background: var(--surface);
+}
+
+.icon-button:active {
+	transform: translateY(0);
+	border-color: var(--text);
+	background: var(--code-bg);
+	transition-duration: 80ms;
+}
+
 .icon-button svg {
 	width: 1.1rem;
 	height: 1.1rem;
@@ -755,6 +767,26 @@ main {
 	color: var(--inverse);
 }
 
+.button:focus-visible {
+	border-color: var(--text);
+	background: var(--surface);
+}
+
+.button:active {
+	transform: translateY(0);
+	border-color: var(--text);
+	background: var(--code-bg);
+	transition-duration: 80ms;
+}
+
+.button.primary:focus-visible {
+	background: color-mix(in srgb, var(--inverse-bg) 90%, var(--inverse));
+}
+
+.button.primary:active {
+	background: color-mix(in srgb, var(--inverse-bg) 80%, var(--inverse));
+}
+
 .home-sections {
 	display: grid;
 	gap: clamp(5rem, 10vw, 9rem);
@@ -955,9 +987,17 @@ main {
 	backdrop-filter: blur(8px);
 }
 
-.copy-code:hover {
+.copy-code:hover,
+.copy-code:focus-visible {
 	border-color: var(--text);
 	color: var(--text);
+}
+
+.copy-code:active {
+	border-color: var(--text);
+	background: var(--code-bg);
+	color: var(--text);
+	transition-duration: 80ms;
 }
 
 :root[data-theme='dark'] .astro-code,
