@@ -314,11 +314,13 @@ h4 {
 }
 
 .desktop-nav a:hover,
+.desktop-nav a:focus-visible,
 .desktop-nav a[aria-current='page'] {
 	color: var(--text);
 }
 
 .desktop-nav a:hover::after,
+.desktop-nav a:focus-visible::after,
 .desktop-nav a[aria-current='page']::after {
 	transform: scaleX(1);
 }
@@ -616,6 +618,16 @@ main {
 	}
 }
 
+.content-card h2 a:focus-visible,
+.content-card h3 a:focus-visible {
+	color: var(--text);
+}
+
+.content-card:has(:is(h2, h3) a:focus-visible) .content-arrow {
+	transform: translate(2px, -2px);
+	color: var(--text);
+}
+
 @media (hover: none), (pointer: coarse) {
 	.content-card:active {
 		opacity: 0.78;
@@ -705,22 +717,35 @@ main {
 	margin-left: 0.08em;
 	vertical-align: -0.06em;
 	background: currentColor;
+	opacity: 0;
+}
+
+.typewriter-cursor.is-typing {
 	animation: typewriter-cursor 0.85s steps(1, end) infinite;
 }
 
-.typewriter-cursor.is-complete {
+.typewriter-cursor.is-typing.is-complete {
 	animation:
-		typewriter-cursor 0.65s steps(1, end) 2,
-		typewriter-cursor-fade 220ms ease 1.3s forwards;
+		typewriter-cursor 0.45s steps(1, end) 1,
+		typewriter-cursor-fade 150ms ease 0.45s forwards;
 }
 
 @keyframes typewriter-cursor {
+	0%,
+	100% {
+		opacity: 1;
+	}
+
 	50% {
 		opacity: 0;
 	}
 }
 
 @keyframes typewriter-cursor-fade {
+	from {
+		opacity: 1;
+	}
+
 	to {
 		opacity: 0;
 	}
@@ -730,6 +755,26 @@ main {
 	max-width: 37rem;
 	color: var(--muted);
 	font-size: clamp(1rem, 2vw, 1.25rem);
+}
+
+.hero-copy.is-entering > p:not(.eyebrow),
+.hero-copy.is-entering .hero-actions {
+	animation: hero-reveal 200ms var(--ease) both;
+}
+
+.hero-copy.is-entering .hero-actions {
+	animation-delay: 50ms;
+}
+
+@keyframes hero-reveal {
+	from {
+		opacity: 0;
+		transform: translateY(4px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 
 .hero-actions,
@@ -848,7 +893,7 @@ main {
 }
 
 .article-toc {
-	--toc-progress: 0%;
+	--toc-progress: 0;
 
 	position: sticky;
 	top: 7rem;
@@ -862,12 +907,12 @@ main {
 	top: 0;
 	left: -1px;
 	width: 2px;
-	height: var(--toc-progress);
+	height: 100%;
+	transform: scaleY(var(--toc-progress));
+	transform-origin: top;
 	background: var(--text);
 	content: '';
-	transition:
-		var(--theme-transition),
-		height 100ms linear;
+	transition: var(--theme-transition);
 }
 
 .article-toc nav {
@@ -882,7 +927,6 @@ main {
 	text-decoration: none;
 	transition:
 		var(--theme-transition),
-		font-weight 150ms ease,
 		transform 150ms var(--ease);
 }
 
@@ -893,7 +937,6 @@ main {
 .article-toc a[aria-current='location'] {
 	transform: translateX(0.125rem);
 	color: var(--text);
-	font-weight: 560;
 }
 
 .article-toc .depth-3 {
@@ -1306,35 +1349,37 @@ main {
 }
 
 .search-dialog {
+	--dialog-duration: 120ms;
 	width: min(42rem, calc(100% - 2rem));
 	max-height: min(44rem, calc(100dvh - 2rem));
 	padding: 0;
 	border: 1px solid var(--line);
 	border-radius: var(--radius-lg);
 	opacity: 0;
-	transform: translateY(0.65rem) scale(0.98);
+	transform: translateY(6px);
 	background: var(--surface-translucent);
 	color: var(--text);
 	box-shadow: var(--shadow-soft);
 	transition:
 		var(--theme-transition),
-		opacity 200ms ease,
-		transform 200ms var(--ease),
-		overlay 200ms allow-discrete,
-		display 200ms allow-discrete;
+		opacity var(--dialog-duration) ease,
+		transform var(--dialog-duration) var(--ease),
+		overlay var(--dialog-duration) allow-discrete,
+		display var(--dialog-duration) allow-discrete;
 	-webkit-backdrop-filter: blur(28px) saturate(120%);
 	backdrop-filter: blur(28px) saturate(120%);
 }
 
 .search-dialog[open] {
+	--dialog-duration: 180ms;
 	opacity: 1;
-	transform: translateY(0) scale(1);
+	transform: translateY(0);
 }
 
 @starting-style {
 	.search-dialog[open] {
 		opacity: 0;
-		transform: translateY(0.65rem) scale(0.98);
+		transform: translateY(6px);
 	}
 }
 
@@ -1342,9 +1387,9 @@ main {
 	background: rgb(0 0 0 / 42%);
 	opacity: 0;
 	transition:
-		opacity 200ms ease,
-		overlay 200ms allow-discrete,
-		display 200ms allow-discrete;
+		opacity var(--dialog-duration) ease,
+		overlay var(--dialog-duration) allow-discrete,
+		display var(--dialog-duration) allow-discrete;
 	-webkit-backdrop-filter: blur(4px);
 	backdrop-filter: blur(4px);
 }

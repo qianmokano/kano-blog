@@ -190,7 +190,7 @@ const toc = headings.filter((heading) => heading.depth === 2 || heading.depth ==
 				Math.max((window.scrollY - progressStart) / progressDistance, 0),
 				1,
 			);
-			toc.style.setProperty('--toc-progress', `${progress * 100}%`);
+			toc.style.setProperty('--toc-progress', String(progress));
 		};
 
 		const requestProgressUpdate = () => {

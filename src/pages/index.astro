@@ -94,26 +94,48 @@ const heroTitle = 'Hi!👋\n这里是kano！';
 
 	if (typewriter) {
 		const text = typewriter.dataset.text ?? typewriter.textContent ?? '';
-		const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+		let hasVisited = false;
+		try {
+			hasVisited = sessionStorage.getItem('kano-home-visited') === 'true';
+			sessionStorage.setItem('kano-home-visited', 'true');
+		} catch {
+			// The greeting still works when browser storage is unavailable.
+		}
 
-		if (!prefersReducedMotion) {
+		if (!motionPreference.matches && !hasVisited) {
+			const hero = typewriter.closest('.hero-copy');
+			hero?.classList.add('is-entering');
+			typewriterCursor?.classList.add('is-typing');
 			const characters = Array.from(text);
 			let characterIndex = 0;
+			let timer = 0;
 			typewriter.textContent = '';
+
+			const finishGreeting = () => {
+				window.clearTimeout(timer);
+				typewriter.textContent = text;
+				typewriterCursor?.classList.remove('is-typing');
+				hero?.classList.remove('is-entering');
+			};
+			window.addEventListener('pagehide', finishGreeting, { once: true });
+			motionPreference.addEventListener('change', (event) => {
+				if (event.matches) finishGreeting();
+			});
 
 			const typeNextCharacter = () => {
 				typewriter.textContent += characters[characterIndex];
 				characterIndex += 1;
 
 				if (characterIndex < characters.length) {
-					const nextCharacterDelay = characters[characterIndex] === '\n' ? 650 : 110;
-					window.setTimeout(typeNextCharacter, nextCharacterDelay);
+					const nextCharacterDelay = characters[characterIndex - 1] === '\n' ? 250 : 85;
+					timer = window.setTimeout(typeNextCharacter, nextCharacterDelay);
 				} else {
 					typewriterCursor?.classList.add('is-complete');
 				}
 			};
 
-			window.setTimeout(typeNextCharacter, 300);
+			timer = window.setTimeout(typeNextCharacter, 120);
 		}
 	}
 </script>
