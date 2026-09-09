@@ -36,6 +36,19 @@ const websiteSchema = {
 <html lang={siteConfig.locale}>
 	<head>
 		<BaseHead {...headProps} structuredData={headProps.structuredData ?? websiteSchema} />
+		<script is:inline>
+			// Keep history traversal immediate so the browser can restore the reading position.
+			window.addEventListener('pageswap', (event) => {
+				if (event.activation?.navigationType === 'traverse') {
+					event.viewTransition?.skipTransition();
+				}
+			});
+			window.addEventListener('pagereveal', (event) => {
+				if (window.navigation?.activation?.navigationType === 'traverse') {
+					event.viewTransition?.skipTransition();
+				}
+			});
+		</script>
 	</head>
 	<body>
 		<a class="skip-link" href="#main-content">跳到正文</a>

@@ -53,10 +53,13 @@ const isActive = (href: string) =>
 					<path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2Z"></path>
 				</svg>
 			</button>
-			<details class="mobile-menu">
+			<details class="mobile-menu" data-mobile-menu>
 				<summary class="icon-button" aria-label="打开导航">
-					<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg
-					>
+					<svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true">
+						<path class="menu-icon-line menu-icon-line-top" d="M4 7h16"></path>
+						<path class="menu-icon-line menu-icon-line-middle" d="M4 12h16"></path>
+						<path class="menu-icon-line menu-icon-line-bottom" d="M4 17h16"></path>
+					</svg>
 				</summary>
 				<nav aria-label="移动导航">
 					{
@@ -72,3 +75,71 @@ const isActive = (href: string) =>
 		</div>
 	</div>
 </header>
+
+<style>
+	.mobile-menu {
+		--menu-icon-duration: 120ms;
+	}
+
+	.mobile-menu[open] {
+		--menu-icon-duration: 180ms;
+	}
+
+	.menu-icon-line {
+		transform-box: view-box;
+		transform-origin: 12px 12px;
+		transition:
+			transform var(--menu-icon-duration) var(--ease),
+			opacity var(--menu-icon-duration) ease;
+	}
+
+	.mobile-menu[open] .menu-icon-line-top {
+		transform: rotate(45deg) translateY(5px);
+	}
+
+	.mobile-menu[open] .menu-icon-line-middle {
+		opacity: 0;
+	}
+
+	.mobile-menu[open] .menu-icon-line-bottom {
+		transform: rotate(-45deg) translateY(-5px);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.menu-icon-line {
+			transition: none !important;
+		}
+	}
+</style>
+
+<script>
+	const setupMobileMenu = () => {
+		document.querySelectorAll<HTMLDetailsElement>('[data-mobile-menu]').forEach((menu) => {
+			const summary = menu.querySelector<HTMLElement>('summary');
+			const setLabel = () =>
+				summary?.setAttribute('aria-label', menu.open ? '关闭导航' : '打开导航');
+			const close = (returnFocus = false) => {
+				if (!menu.open) return;
+				menu.open = false;
+				setLabel();
+				if (returnFocus) summary?.focus();
+			};
+
+			setLabel();
+			menu.addEventListener('toggle', setLabel);
+			menu.addEventListener('keydown', (event) => {
+				if (event.key !== 'Escape' || event.isComposing || !menu.open) return;
+				event.preventDefault();
+				close(true);
+			});
+			menu.querySelector('nav')?.addEventListener('click', (event) => {
+				if (event.target instanceof Element && event.target.closest('a')) close();
+			});
+			document.addEventListener('click', (event) => {
+				if (menu.open && !menu.contains(event.target as Node)) close();
+			});
+		});
+	};
+
+	setupMobileMenu();
+</script>

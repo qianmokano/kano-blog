@@ -77,13 +77,36 @@
 		let retryAction;
 		let query = '';
 		let instance;
+		let statusTimer;
+		let pendingStatusId;
+		let pendingStatusText = '';
+		const moreLabel = more.textContent;
+		const retryLabel = retry.textContent;
 
-		const recover = async (id, limit, focusNew) => {
-			setBusy(true);
+		const beginPendingStatus = (id, text) => {
+			clearTimeout(statusTimer);
+			pendingStatusId = id;
+			pendingStatusText = text;
+			statusTimer = setTimeout(() => {
+				if (id === requestId && pendingStatusId === id) status.textContent = pendingStatusText;
+			}, 180);
+		};
+		const updatePendingStatus = (id, text) => {
+			if (pendingStatusId === id) pendingStatusText = text;
+		};
+		const finishPendingStatus = (id) => {
+			if (pendingStatusId !== id) return;
+			clearTimeout(statusTimer);
+			statusTimer = undefined;
+			pendingStatusId = undefined;
+		};
+
+		const recover = async (id, limit, focusNew, action = 'retry') => {
+			setBusy(true, 'retry');
 			const failed = instance;
 			instance = undefined;
 			await failed?.destroy?.();
-			if (id === requestId) await search(id, undefined, limit, focusNew);
+			if (id === requestId) await search(id, undefined, limit, focusNew, action);
 		};
 
 		const searchUrl = () => '/search/' + (query ? '?q=' + encodeURIComponent(query) : '');
@@ -109,10 +132,12 @@
 			}
 		};
 
-		const setBusy = (value) => {
+		const setBusy = (value, action) => {
 			busy = value;
 			more.disabled = value;
 			retry.disabled = value;
+			more.textContent = value && action === 'more' ? '正在加载…' : moreLabel;
+			retry.textContent = value && action === 'retry' ? '正在重试…' : retryLabel;
 			results.setAttribute('aria-busy', String(value));
 		};
 		const fail = (action) => {
@@ -126,11 +151,20 @@
 			more.hidden = true;
 		};
 
-		const loadBatch = async (id, limit = shown + pageSize, focusNew = false) => {
-			setBusy(true);
-			retry.hidden = true;
-			reload.hidden = true;
-			status.textContent = '正在加载结果…';
+		const animateAddedResults = (links) => {
+			if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+			for (const link of links) {
+				link.animate([{ opacity: 0 }, { opacity: 1 }], {
+					duration: 160,
+					easing: 'ease-out',
+				});
+			}
+		};
+
+		const loadBatch = async (id, limit = shown + pageSize, focusNew = false, action = 'search') => {
+			setBusy(true, action.startsWith('retry') ? 'retry' : action);
+			if (pendingStatusId === id) updatePendingStatus(id, '正在加载结果…');
+			else beginPendingStatus(id, '正在加载结果…');
 			const start = shown;
 			try {
 				const batch = matches.slice(start, limit);
@@ -138,7 +172,9 @@
 				if (id !== requestId) return;
 				const links = data.map(renderResult).filter(Boolean);
 				results.append(...links);
+				if (action === 'more' || action === 'retry-more') animateAddedResults(links);
 				shown += batch.length;
+				finishPendingStatus(id);
 				status.textContent = matches.length
 					? '已显示 ' + shown + ' / 共 ' + matches.length + ' 条结果'
 					: '没有找到相关内容';
@@ -146,22 +182,29 @@
 				// Pagefind can return no matches after swallowing an index download failure.
 				// Allow a fresh instance even when that failure is indistinguishable from no hits.
 				if (!matches.length) {
-					retryAction = () => recover(id, limit, focusNew);
+					retryAction = () => recover(id, limit, focusNew, 'retry');
 					retry.hidden = false;
+				} else {
+					retry.hidden = true;
+					reload.hidden = true;
 				}
 				if (focusNew) links[0]?.focus({ preventScroll: true });
 				savePosition();
 			} catch {
-				if (id === requestId) fail(() => recover(id, limit, focusNew));
+				if (id === requestId)
+					fail(() => recover(id, limit, focusNew, focusNew ? 'retry-more' : 'retry'));
 			} finally {
-				if (id === requestId) setBusy(false);
+				if (id === requestId) {
+					finishPendingStatus(id);
+					setBusy(false);
+				}
 			}
 		};
 
-		const search = async (id, saved, retryLimit, focusNew = false) => {
+		const search = async (id, saved, retryLimit, focusNew = false, action = 'search') => {
 			if (id !== requestId || !query) return;
-			setBusy(true);
-			status.textContent = '正在搜索…';
+			setBusy(true, action.startsWith('retry') ? 'retry' : action);
+			beginPendingStatus(id, '正在搜索…');
 			try {
 				const module = await loadPagefind();
 				if (id !== requestId) return;
@@ -173,7 +216,7 @@
 					saved?.query === query && Number.isSafeInteger(saved.limit)
 						? Math.max(pageSize, Math.min(saved.limit, matches.length))
 						: pageSize;
-				await loadBatch(id, retryLimit ?? limit, focusNew);
+				await loadBatch(id, retryLimit ?? limit, focusNew, action);
 				if (id !== requestId || !retry.hidden || saved?.query !== query) return;
 				requestAnimationFrame(() => {
 					if (id !== requestId) return;
@@ -187,14 +230,17 @@
 				});
 			} catch {
 				if (id === requestId) {
+					finishPendingStatus(id);
 					setBusy(false);
-					fail(() => recover(id, retryLimit, focusNew));
+					fail(() => recover(id, retryLimit, focusNew, 'retry'));
 				}
 			}
 		};
 
 		const update = (immediate = false, saved) => {
 			clearTimeout(timer);
+			clearTimeout(statusTimer);
+			pendingStatusId = undefined;
 			const id = ++requestId;
 			query = input.value.trim();
 			matches = [];
@@ -214,7 +260,11 @@
 		input.addEventListener('compositionstart', () => {
 			composing = true;
 			clearTimeout(timer);
+			clearTimeout(statusTimer);
+			pendingStatusId = undefined;
 			++requestId;
+			setBusy(false);
+			status.textContent = '';
 		});
 		input.addEventListener('compositionend', () => {
 			composing = false;
@@ -222,11 +272,10 @@
 		});
 		input.addEventListener('input', () => update());
 		more.addEventListener('click', () => {
-			if (!busy) void loadBatch(requestId, shown + pageSize, true);
+			if (!busy) void loadBatch(requestId, shown + pageSize, true, 'more');
 		});
 		retry.addEventListener('click', () => {
 			if (!busy) {
-				retry.hidden = reload.hidden = true;
 				void retryAction?.();
 			}
 		});

@@ -101,11 +101,11 @@ html {
 }
 
 ::view-transition-old(page-content) {
-	animation: page-fade-out 140ms ease-in both;
+	animation: page-fade-out 80ms ease-in both;
 }
 
 ::view-transition-new(page-content) {
-	animation: page-fade-in 140ms ease-out both;
+	animation: page-fade-in 160ms ease-out 60ms both;
 }
 
 @keyframes page-fade-out {
@@ -541,6 +541,7 @@ main {
 	grid-template-columns: minmax(0, 1fr) auto;
 	gap: 1.25rem;
 	padding-block: 1.6rem;
+	padding-inline: clamp(1rem, 2vw, 1.5rem);
 	border-bottom: 1px solid var(--line);
 	transition:
 		var(--theme-transition),
@@ -607,6 +608,10 @@ main {
 }
 
 @media (hover: hover) and (pointer: fine) {
+	.content-card:hover {
+		background-color: color-mix(in srgb, var(--text) 3%, var(--bg));
+	}
+
 	.content-card:hover h2 a,
 	.content-card:hover h3 a {
 		color: var(--text);
@@ -626,6 +631,10 @@ main {
 .content-card:has(:is(h2, h3) a:focus-visible) .content-arrow {
 	transform: translate(2px, -2px);
 	color: var(--text);
+}
+
+.content-card:has(a:focus-visible) {
+	background-color: color-mix(in srgb, var(--text) 3%, var(--bg));
 }
 
 @media (hover: none), (pointer: coarse) {
