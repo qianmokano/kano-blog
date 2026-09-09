@@ -2,6 +2,11 @@ import { defineCollection } from 'astro:content';
 import { file, glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 
+const tags = z
+	.array(z.string().trim().min(1))
+	.refine((values) => new Set(values).size === values.length, { message: '标签不能重复。' })
+	.default([]);
+
 const blog = defineCollection({
 	loader: glob({ base: './src/content/blog', pattern: '**/*.{md,mdx}' }),
 	schema: ({ image }) =>
@@ -10,7 +15,7 @@ const blog = defineCollection({
 			description: z.string().min(1),
 			publishedAt: z.coerce.date(),
 			updatedAt: z.coerce.date().optional(),
-			tags: z.array(z.string().min(1)).default([]),
+			tags,
 			cover: image().optional(),
 			coverAlt: z.string().trim().min(1).optional(),
 			featured: z.boolean().default(false),
@@ -24,7 +29,7 @@ const notes = defineCollection({
 	schema: z.object({
 		title: z.string().min(1),
 		publishedAt: z.coerce.date(),
-		tags: z.array(z.string().min(1)).default([]),
+		tags,
 		draft: z.boolean().default(false),
 	}),
 });

@@ -11,8 +11,7 @@
 			const path = '/pagefind/pagefind.js' + (loadAttempt ? '?retry=' + loadAttempt : '');
 			loadAttempt += 1;
 			loading = import(path)
-				.then(async (module) => {
-					await module.options({ excerptLength: 28 });
+				.then((module) => {
 					pagefind = module;
 					return module;
 				})
@@ -77,6 +76,15 @@
 		let busy = false;
 		let retryAction;
 		let query = '';
+		let instance;
+
+		const recover = async (id, limit, focusNew) => {
+			setBusy(true);
+			const failed = instance;
+			instance = undefined;
+			await failed?.destroy?.();
+			if (id === requestId) await search(id, undefined, limit, focusNew);
+		};
 
 		const searchUrl = () => '/search/' + (query ? '?q=' + encodeURIComponent(query) : '');
 		const savePosition = () => {
@@ -135,30 +143,37 @@
 					? '已显示 ' + shown + ' / 共 ' + matches.length + ' 条结果'
 					: '没有找到相关内容';
 				more.hidden = shown >= matches.length;
+				// Pagefind can return no matches after swallowing an index download failure.
+				// Allow a fresh instance even when that failure is indistinguishable from no hits.
+				if (!matches.length) {
+					retryAction = () => recover(id, limit, focusNew);
+					retry.hidden = false;
+				}
 				if (focusNew) links[0]?.focus({ preventScroll: true });
 				savePosition();
 			} catch {
-				if (id === requestId) fail(() => loadBatch(id, limit, focusNew));
+				if (id === requestId) fail(() => recover(id, limit, focusNew));
 			} finally {
 				if (id === requestId) setBusy(false);
 			}
 		};
 
-		const search = async (id, saved) => {
+		const search = async (id, saved, retryLimit, focusNew = false) => {
 			if (id !== requestId || !query) return;
 			setBusy(true);
 			status.textContent = '正在搜索…';
 			try {
-				const api = await loadPagefind();
+				const module = await loadPagefind();
 				if (id !== requestId) return;
-				const response = await api.search(query);
+				instance ??= module.createInstance ? module.createInstance({ excerptLength: 28 }) : module;
+				const response = await instance.search(query);
 				if (id !== requestId) return;
 				matches = response.results;
 				const limit =
 					saved?.query === query && Number.isSafeInteger(saved.limit)
 						? Math.max(pageSize, Math.min(saved.limit, matches.length))
 						: pageSize;
-				await loadBatch(id, limit);
+				await loadBatch(id, retryLimit ?? limit, focusNew);
 				if (id !== requestId || !retry.hidden || saved?.query !== query) return;
 				requestAnimationFrame(() => {
 					if (id !== requestId) return;
@@ -173,7 +188,7 @@
 			} catch {
 				if (id === requestId) {
 					setBusy(false);
-					fail(() => search(id, saved));
+					fail(() => recover(id, retryLimit, focusNew));
 				}
 			}
 		};

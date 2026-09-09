@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
 	filterDrafts,
+	getCalendarYear,
 	formatDate,
 	getReadingTime,
 	groupPostsByTag,
@@ -10,6 +11,14 @@ import {
 } from '../../src/lib/content-utils';
 
 describe('content utilities', () => {
+	it('uses the Shanghai calendar at year boundaries', () => {
+		expect(getCalendarYear(new Date('2025-12-31T15:59:59Z'))).toBe(2025);
+		expect(getCalendarYear(new Date('2025-12-31T16:00:00Z'))).toBe(2026);
+	});
+	it('counts each post once when tags repeat', () => {
+		const post = { data: { tags: ['Astro', 'Astro'] } };
+		expect(groupPostsByTag([post]).get('astro')?.posts).toEqual([post]);
+	});
 	it('filters drafts unless explicitly included', () => {
 		const entries = [{ data: { draft: false } }, { data: { draft: true } }];
 		expect(filterDrafts(entries, false)).toHaveLength(1);

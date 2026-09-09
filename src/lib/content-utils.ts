@@ -41,7 +41,7 @@ export function groupPostsByTag<T extends TagEntry>(posts: T[]) {
 	const groups = new Map<string, { name: string; posts: T[] }>();
 
 	for (const post of posts) {
-		for (const name of post.data.tags) {
+		for (const name of new Set(post.data.tags)) {
 			const slug = normalizeTagSlug(name);
 			if (!slug) throw new Error(`标签“${name}”无法生成有效链接。`);
 
@@ -69,4 +69,10 @@ export function formatDate(date: Date) {
 		month: '2-digit',
 		day: '2-digit',
 	}).format(date);
+}
+
+export function getCalendarYear(date: Date) {
+	return Number(
+		new Intl.DateTimeFormat('en', { timeZone: 'Asia/Shanghai', year: 'numeric' }).format(date),
+	);
 }

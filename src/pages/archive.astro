@@ -1,9 +1,9 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import { formatDate, getBlogPosts } from '@/lib/content';
+import { formatDate, getBlogPosts, getCalendarYear } from '@/lib/content';
 
 const posts = await getBlogPosts();
-const groups = Map.groupBy(posts, (post) => post.data.publishedAt.getFullYear());
+const groups = Map.groupBy(posts, (post) => getCalendarYear(post.data.publishedAt));
 const years = [...groups.keys()].sort((a, b) => b - a);
 ---
 

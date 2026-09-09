@@ -18,7 +18,7 @@ export async function getStaticPaths() {
 			.filter((candidate) => candidate.id !== post.id)
 			.map((candidate) => ({
 				candidate,
-				score: candidate.data.tags.filter((tag) => tags.has(tag)).length,
+				score: [...new Set(candidate.data.tags)].filter((tag) => tags.has(tag)).length,
 			}))
 			.filter(({ score }) => score > 0)
 			.sort((a, b) => b.score - a.score)

@@ -220,3 +220,29 @@ test('articles and projects expose distinct PNG sharing images', async ({ page, 
 	}
 	expect(new Set(urls).size).toBe(3);
 });
+
+for (const extension of ['pf_fragment', 'pf_index']) {
+	test(`real Pagefind ${extension} failure recovers without refreshing`, async ({ page }) => {
+		let failedUrl = '';
+		let attempts = 0;
+		await page.route(`**/*.${extension}`, async (route) => {
+			const url = route.request().url();
+			if (!failedUrl) failedUrl = url;
+			if (url === failedUrl) {
+				attempts += 1;
+				if (attempts === 1) {
+					await route.abort('failed');
+					return;
+				}
+			}
+			await route.continue();
+		});
+		await page.goto('/search/?q=Astro');
+		const root = searchRoot(page);
+		await expect(root.getByRole('button', { name: '重试搜索' })).toBeVisible();
+		await root.getByRole('button', { name: '重试搜索' }).click();
+		await expect(root.getByRole('link', { name: /你好，这里是 Kano/ })).toBeVisible();
+		expect(attempts).toBeGreaterThan(1);
+		await expect(root.getByRole('button', { name: '重试搜索' })).toBeHidden();
+	});
+}
