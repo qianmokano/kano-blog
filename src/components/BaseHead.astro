@@ -1,10 +1,11 @@
 ---
 import { siteConfig } from '@/lib/site';
+import type { SocialImage } from '@/lib/social-image';
 
 interface Props {
 	title?: string;
 	description?: string;
-	image?: string;
+	image?: string | SocialImage;
 	type?: 'website' | 'article';
 	noindex?: boolean;
 	structuredData?: Record<string, unknown> | Record<string, unknown>[];
@@ -13,14 +14,21 @@ interface Props {
 const {
 	title,
 	description = siteConfig.description,
-	image = '/og-default.svg',
+	image = {
+		src: '/og/default.png',
+		width: 1200,
+		height: 630,
+		alt: siteConfig.brandName,
+		type: 'image/png',
+	},
 	type = 'website',
 	noindex = false,
 	structuredData,
 } = Astro.props;
 const pageTitle = title ? `${title} - ${siteConfig.brandName}` : siteConfig.title;
 const canonical = new URL(Astro.url.pathname, siteConfig.url);
-const socialImage = new URL(image, siteConfig.url);
+const imageData = typeof image === 'string' ? { src: image, alt: pageTitle } : image;
+const socialImage = new URL(imageData.src, siteConfig.url);
 ---
 
 <meta charset="utf-8" />
@@ -43,10 +51,15 @@ const socialImage = new URL(image, siteConfig.url);
 <meta property="og:description" content={description} />
 <meta property="og:url" content={canonical} />
 <meta property="og:image" content={socialImage} />
+<meta property="og:image:alt" content={imageData.alt} />
+{'width' in imageData && <meta property="og:image:width" content={String(imageData.width)} />}
+{'height' in imageData && <meta property="og:image:height" content={String(imageData.height)} />}
+{'type' in imageData && <meta property="og:image:type" content={imageData.type} />}
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content={pageTitle} />
 <meta name="twitter:description" content={description} />
 <meta name="twitter:image" content={socialImage} />
+<meta name="twitter:image:alt" content={imageData.alt} />
 
 <script is:inline>
 	(() => {

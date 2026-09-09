@@ -132,6 +132,7 @@ const heroTitle = 'Hi!👋\n这里是kano！';
 					timer = window.setTimeout(typeNextCharacter, nextCharacterDelay);
 				} else {
 					typewriterCursor?.classList.add('is-complete');
+					hero?.classList.remove('is-entering');
 				}
 			};
 

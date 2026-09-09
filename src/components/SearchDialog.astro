@@ -1,3 +1,7 @@
+---
+import SearchResults from '@/components/SearchResults.astro';
+---
+
 <dialog class="search-dialog" data-search-dialog aria-labelledby="search-dialog-title">
 	<div class="search-dialog-panel">
 		<div class="search-dialog-header">
@@ -14,8 +18,9 @@
 			<input type="search" data-pagefind-input placeholder="输入关键词…" autocomplete="off" />
 			<kbd>ESC</kbd>
 		</label>
-		<p class="search-status" data-pagefind-status aria-live="polite"></p>
-		<div class="search-results" data-pagefind-results></div>
-		<a class="search-all-link" href="/search/">前往完整搜索页 <span aria-hidden="true">↗</span></a>
+		<SearchResults />
+		<a class="search-all-link" href="/search/" data-search-all
+			>前往完整搜索页 <span aria-hidden="true">↗</span></a
+		>
 	</div>
 </dialog>

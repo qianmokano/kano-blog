@@ -8,11 +8,12 @@ import Header from '@/components/Header.astro';
 import SearchDialog from '@/components/SearchDialog.astro';
 import { siteConfig } from '@/lib/site';
 import { authorSchema } from '@/lib/structured-data';
+import type { SocialImage } from '@/lib/social-image';
 
 interface Props {
 	title?: string;
 	description?: string;
-	image?: string;
+	image?: string | SocialImage;
 	type?: 'website' | 'article';
 	noindex?: boolean;
 	structuredData?: Record<string, unknown> | Record<string, unknown>[];
@@ -74,8 +75,10 @@ const websiteSchema = {
 
 				const dialog = document.querySelector('[data-search-dialog]');
 				const input = dialog?.querySelector('[data-pagefind-input]');
+				let searchOpener;
 				const openSearch = () => {
-					if (dialog instanceof HTMLDialogElement) {
+					if (dialog instanceof HTMLDialogElement && !dialog.open) {
+						searchOpener = document.activeElement;
 						dialog.showModal();
 						requestAnimationFrame(() => input?.focus());
 					}
@@ -83,6 +86,18 @@ const websiteSchema = {
 				const closeSearch = () => {
 					if (dialog instanceof HTMLDialogElement) dialog.close();
 				};
+				dialog?.addEventListener('close', () => {
+					requestAnimationFrame(() => {
+						if (!dialog.open && searchOpener instanceof HTMLElement) searchOpener.focus();
+					});
+				});
+				dialog?.addEventListener('keydown', (event) => {
+					// Search inputs can consume Escape to clear their value before the dialog closes.
+					if (event.key === 'Escape' && !event.isComposing) {
+						event.preventDefault();
+						closeSearch();
+					}
+				});
 				document
 					.querySelectorAll('[data-search-open]')
 					.forEach((button) => button.addEventListener('click', openSearch));

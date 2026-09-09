@@ -1,10 +1,13 @@
 ---
 import type { CollectionEntry } from 'astro:content';
+import { Image } from 'astro:assets';
 import Giscus from '@/components/Giscus.astro';
+import TocLinks from '@/components/TocLinks.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { formatDate, getReadingTime, normalizeTagSlug } from '@/lib/content';
 import { siteConfig } from '@/lib/site';
 import { absoluteSiteUrl, authorSchema, createBreadcrumbSchema } from '@/lib/structured-data';
+import { getSocialImage } from '@/lib/social-image';
 
 interface Props {
 	post: CollectionEntry<'blog'>;
@@ -16,6 +19,7 @@ interface Props {
 
 const { post, headings, previous, next, related = [] } = Astro.props;
 const articlePath = `/blog/${post.id}/`;
+const socialImage = await getSocialImage(post);
 const articleSchema = {
 	'@context': 'https://schema.org',
 	'@type': 'BlogPosting',
@@ -26,6 +30,7 @@ const articleSchema = {
 	inLanguage: siteConfig.locale,
 	mainEntityOfPage: absoluteSiteUrl(articlePath),
 	author: authorSchema,
+	image: absoluteSiteUrl(socialImage.src),
 };
 const breadcrumbSchema = createBreadcrumbSchema([
 	{ name: '首页', path: '/' },
@@ -39,6 +44,7 @@ const toc = headings.filter((heading) => heading.depth === 2 || heading.depth ==
 	title={post.data.title}
 	description={post.data.description}
 	type="article"
+	image={socialImage}
 	structuredData={[articleSchema, breadcrumbSchema]}
 >
 	<article class="article-page" data-pagefind-body data-pagefind-meta="type:文章">
@@ -62,20 +68,39 @@ const toc = headings.filter((heading) => heading.depth === 2 || heading.depth ==
 				}
 			</ul>
 		</header>
+		{
+			post.data.cover && (
+				<figure class="content-cover reading-shell">
+					<Image
+						src={post.data.cover}
+						alt={post.data.coverAlt ?? `${post.data.title}的封面`}
+						widths={[480, 768, 1200]}
+						sizes="(max-width: 48rem) calc(100vw - 1.5rem), 48rem"
+					/>
+				</figure>
+			)
+		}
 
 		<div class:list={['article-grid shell', { 'without-toc': toc.length === 0 }]}>
+			{
+				toc.length > 0 && (
+					<details class="mobile-toc" data-pagefind-ignore>
+						<summary>
+							<span>目录 · {toc.length} 节</span>
+							<span class="toc-current" data-toc-current>
+								{toc[0].text}
+							</span>
+						</summary>
+						<TocLinks headings={toc} />
+					</details>
+				)
+			}
 			<div class="prose"><slot /></div>
 			{
 				toc.length > 0 && (
 					<aside class="article-toc" data-pagefind-ignore>
 						<p class="eyebrow">On this page</p>
-						<nav aria-label="文章目录">
-							{toc.map((heading) => (
-								<a class={`depth-${heading.depth}`} href={`#${heading.slug}`}>
-									{heading.text}
-								</a>
-							))}
-						</nav>
+						<TocLinks headings={toc} />
 					</aside>
 				)
 			}
@@ -157,6 +182,25 @@ const toc = headings.filter((heading) => heading.depth === 2 || heading.depth ==
 	});
 
 	const toc = document.querySelector<HTMLElement>('.article-toc');
+	const mobileToc = document.querySelector<HTMLDetailsElement>('.mobile-toc');
+	const mobileLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>('.mobile-toc a'));
+	const currentSection = document.querySelector<HTMLElement>('[data-toc-current]');
+	mobileLinks.forEach((link) => {
+		link.addEventListener('click', () => {
+			if (mobileToc) mobileToc.open = false;
+			const heading = document.getElementById(decodeURIComponent(link.hash.slice(1)));
+			if (heading) {
+				heading.tabIndex = -1;
+				heading.focus({ preventScroll: true });
+			}
+		});
+	});
+	mobileToc?.addEventListener('keydown', (event) => {
+		if (event.key === 'Escape' && mobileToc.open) {
+			mobileToc.open = false;
+			mobileToc.querySelector('summary')?.focus();
+		}
+	});
 	const prose = document.querySelector<HTMLElement>('.article-grid > .prose');
 	const tocItems = Array.from(
 		document.querySelectorAll<HTMLAnchorElement>('.article-toc a[href^="#"]'),
@@ -182,6 +226,11 @@ const toc = headings.filter((heading) => heading.depth === 2 || heading.depth ==
 				if (item === activeItem) item.link.setAttribute('aria-current', 'location');
 				else item.link.removeAttribute('aria-current');
 			}
+			mobileLinks.forEach((link) => {
+				if (link.hash === activeItem.link.hash) link.setAttribute('aria-current', 'location');
+				else link.removeAttribute('aria-current');
+			});
+			if (currentSection) currentSection.textContent = activeItem.link.textContent;
 
 			const proseTop = prose.getBoundingClientRect().top + window.scrollY;
 			const progressStart = proseTop - readingLine;

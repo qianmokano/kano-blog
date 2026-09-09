@@ -1,8 +1,10 @@
 ---
 import { render, type CollectionEntry } from 'astro:content';
+import { Image } from 'astro:assets';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { getProjects } from '@/lib/content';
 import { absoluteSiteUrl, createBreadcrumbSchema } from '@/lib/structured-data';
+import { getSocialImage } from '@/lib/social-image';
 
 interface Props {
 	project: CollectionEntry<'projects'>;
@@ -18,6 +20,7 @@ export async function getStaticPaths() {
 const { project } = Astro.props;
 const { Content } = await render(project);
 const projectPath = `/projects/${project.id}/`;
+const socialImage = await getSocialImage(project);
 const projectSchema = {
 	'@context': 'https://schema.org',
 	'@type': 'SoftwareSourceCode',
@@ -26,6 +29,7 @@ const projectSchema = {
 	codeRepository: project.data.repositoryUrl,
 	url: project.data.demoUrl ?? absoluteSiteUrl(projectPath),
 	programmingLanguage: project.data.tech,
+	image: absoluteSiteUrl(socialImage.src),
 };
 const breadcrumbSchema = createBreadcrumbSchema([
 	{ name: '首页', path: '/' },
@@ -37,6 +41,7 @@ const breadcrumbSchema = createBreadcrumbSchema([
 <BaseLayout
 	title={project.data.title}
 	description={project.data.description}
+	image={socialImage}
 	structuredData={[projectSchema, breadcrumbSchema]}
 >
 	<article
@@ -72,6 +77,18 @@ const breadcrumbSchema = createBreadcrumbSchema([
 				}
 			</div>
 		</header>
+		{
+			project.data.cover && (
+				<figure class="content-cover reading-shell">
+					<Image
+						src={project.data.cover}
+						alt={project.data.coverAlt ?? `${project.data.title}的封面`}
+						widths={[480, 768, 1200]}
+						sizes="(max-width: 48rem) calc(100vw - 1.5rem), 48rem"
+					/>
+				</figure>
+			)
+		}
 		<div class="prose reading-shell"><Content /></div>
 	</article>
 </BaseLayout>

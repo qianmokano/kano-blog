@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import SearchResults from '@/components/SearchResults.astro';
 ---
 
 <BaseLayout title="搜索" description="搜索文章、笔记和项目。" noindex>
@@ -22,7 +23,6 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 				autocomplete="off"
 			/>
 		</label>
-		<p class="search-status" data-pagefind-status aria-live="polite"></p>
-		<div class="search-results page-search-results" data-pagefind-results></div>
+		<SearchResults />
 	</section>
 </BaseLayout>
