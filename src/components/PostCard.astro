@@ -18,7 +18,11 @@ const { post, headingLevel: Heading = 'h2' } = Astro.props;
 			<span>{getReadingTime(post.body ?? '')} 分钟阅读</span>
 			{post.data.draft && <span>草稿</span>}
 		</div>
-		<Heading><a href={`/blog/${post.id}/`}>{post.data.title}</a></Heading>
+		<Heading
+			><a href={`/blog/${post.id}/`} data-transition-title-link
+				><span data-transition-title-source>{post.data.title}</span></a
+			></Heading
+		>
 		<p>{post.data.description}</p>
 		{
 			post.data.tags.length > 0 && (

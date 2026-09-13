@@ -59,7 +59,7 @@ const toc = headings.filter((heading) => heading.depth === 2 || heading.depth ==
 				<span>{getReadingTime(post.body ?? '')} 分钟阅读</span>
 				{post.data.updatedAt && <span>更新于 {formatDate(post.data.updatedAt)}</span>}
 			</div>
-			<h1 data-pagefind-meta="title">{post.data.title}</h1>
+			<h1 data-pagefind-meta="title" data-transition-title-target>{post.data.title}</h1>
 			<p>{post.data.description}</p>
 			<ul class="tag-list" aria-label="标签">
 				{
@@ -113,10 +113,10 @@ const toc = headings.filter((heading) => heading.depth === 2 || heading.depth ==
 		<nav class="article-neighbors reading-shell" aria-label="相邻文章" data-pagefind-ignore>
 			{
 				previous ? (
-					<a href={`/blog/${previous.id}/`}>
+					<a href={`/blog/${previous.id}/`} data-transition-title-link>
 						<>
 							<span>← 上一篇</span>
-							<strong>{previous.data.title}</strong>
+							<strong data-transition-title-source>{previous.data.title}</strong>
 						</>
 					</a>
 				) : (
@@ -125,10 +125,10 @@ const toc = headings.filter((heading) => heading.depth === 2 || heading.depth ==
 			}
 			{
 				next ? (
-					<a class="next" href={`/blog/${next.id}/`}>
+					<a class="next" href={`/blog/${next.id}/`} data-transition-title-link>
 						<>
 							<span>下一篇 →</span>
-							<strong>{next.data.title}</strong>
+							<strong data-transition-title-source>{next.data.title}</strong>
 						</>
 					</a>
 				) : (
@@ -144,8 +144,8 @@ const toc = headings.filter((heading) => heading.depth === 2 || heading.depth ==
 					<ul>
 						{related.map((item) => (
 							<li>
-								<a href={`/blog/${item.id}/`}>
-									{item.data.title}
+								<a href={`/blog/${item.id}/`} data-transition-title-link>
+									<span data-transition-title-source>{item.data.title}</span>
 									<span aria-hidden="true">↗</span>
 								</a>
 							</li>

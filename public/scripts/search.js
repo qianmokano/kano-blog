@@ -29,10 +29,12 @@
 		if (url.origin !== location.origin || !/^https?:$/.test(url.protocol)) return null;
 		link.className = 'search-result';
 		link.href = url.href;
+		link.dataset.transitionTitleLink = '';
 		const type = document.createElement('span');
 		type.className = 'search-result-type';
 		type.textContent = result.meta?.type || '内容';
 		const title = document.createElement('strong');
+		title.dataset.transitionTitleSource = '';
 		title.textContent = result.meta?.title || result.url;
 		const excerpt = document.createElement('p');
 		// Keep Pagefind highlights, but do not insert arbitrary excerpt markup.

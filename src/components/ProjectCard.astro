@@ -15,7 +15,11 @@ const { project, headingLevel: Heading = 'h2' } = Astro.props;
 			<span>{project.data.period}</span>
 			<span class="status-pill">{project.data.status}</span>
 		</div>
-		<Heading><a href={`/projects/${project.id}/`}>{project.data.title}</a></Heading>
+		<Heading
+			><a href={`/projects/${project.id}/`} data-transition-title-link
+				><span data-transition-title-source>{project.data.title}</span></a
+			></Heading
+		>
 		<p>{project.data.description}</p>
 		{
 			project.data.tech.length > 0 && (

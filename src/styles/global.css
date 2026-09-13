@@ -108,6 +108,22 @@ html {
 	animation: page-fade-in 160ms ease-out 60ms both;
 }
 
+::view-transition-group(content-title) {
+	z-index: 2;
+	animation-duration: 420ms;
+	animation-timing-function: var(--ease);
+}
+
+::view-transition-old(content-title),
+::view-transition-new(content-title) {
+	height: 100%;
+	mix-blend-mode: normal;
+}
+
+[data-transition-title-target] {
+	view-transition-name: content-title;
+}
+
 @keyframes page-fade-out {
 	to {
 		opacity: 0;
@@ -843,6 +859,17 @@ main {
 	display: grid;
 	gap: clamp(5rem, 10vw, 9rem);
 	padding-block: 2rem 6rem;
+}
+
+.motion-ready [data-reveal] {
+	transform: translateY(0);
+	transition:
+		var(--theme-transition),
+		transform 520ms var(--ease) var(--reveal-delay, 0ms);
+}
+
+.motion-ready [data-reveal]:not(.is-revealed) {
+	transform: translateY(0.8rem);
 }
 
 .compact-list .content-card {
@@ -1676,6 +1703,16 @@ main {
 }
 
 @media (prefers-reduced-motion: reduce) {
+	[data-transition-title-target],
+	[data-transition-title-source] {
+		view-transition-name: none !important;
+	}
+
+	.motion-ready [data-reveal],
+	.motion-ready [data-reveal]:not(.is-revealed) {
+		transform: none !important;
+	}
+
 	.mobile-menu::details-content {
 		transition: none;
 	}

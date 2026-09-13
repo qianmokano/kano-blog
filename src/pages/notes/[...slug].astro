@@ -23,7 +23,7 @@ const { Content } = await render(note);
 	>
 		<header class="prose-header">
 			<p class="eyebrow">Note</p>
-			<h1 data-pagefind-meta="title">{note.data.title}</h1>
+			<h1 data-pagefind-meta="title" data-transition-title-target>{note.data.title}</h1>
 			<time datetime={note.data.publishedAt.toISOString()}>{formatDate(note.data.publishedAt)}</time
 			>
 		</header>
