@@ -6,6 +6,7 @@ on:
   pull_request:
 
 permissions:
+  checks: read
   contents: read
 
 jobs:
@@ -26,3 +27,22 @@ jobs:
       - run: pnpm test
       - run: pnpm build
       - run: pnpm test:e2e
+
+  submit-baidu:
+    name: Submit changed articles to Baidu
+    if: github.event_name == 'push'
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Wait for deployment and submit URLs
+        env:
+          BAIDU_SUBMIT_ENDPOINT: ${{ secrets.BAIDU_SUBMIT_ENDPOINT }}
+          BASE_SHA: ${{ github.event.before }}
+          GITHUB_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.sha }}
+          SITE_URL: https://blog.thekanojyo.com
+        run: node scripts/submit-baidu-urls.mjs

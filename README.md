@@ -1,6 +1,6 @@
 # Kano Blog
 
-Kano 的个人博客，使用 Astro、TypeScript、MDX、Pagefind 和 Giscus 构建。网站完全静态生成，主域名为 [blog.thekanojyo.com](https://blog.thekanojyo.com)，备用域名为 [blog.kanojyo.de](https://blog.kanojyo.de)。
+Kano 的个人博客，使用 Astro、TypeScript、MDX、Pagefind 和 Giscus 构建。网站完全静态生成，主域名为 [blog.thekanojyo.com](https://blog.thekanojyo.com)，旧域名 `blog.kanojyo.de` 逐页重定向到主域名。
 
 ## 本地开发
 
@@ -62,6 +62,14 @@ comments: true
 
 生产构建会排除 `draft: true` 的文章、笔记和项目。图片应优先放在相应内容附近，并通过 MDX 导入，以便 Astro 自动优化；无需处理的静态资源放在 `public/`。
 
+`main` 分支通过全部 CI 检查和对应的 Cloudflare Pages 部署后，发布流程会检测本次提交中新增或修改的非草稿文章，等待线上文章地址可访问，再自动提交给百度普通收录 API。删除文章、草稿和普通代码变更不会提交网址。首次启用时，在 GitHub 仓库中添加名为 `BAIDU_SUBMIT_ENDPOINT` 的 Actions Secret，值为百度搜索资源平台「普通收录 → API 提交」显示的完整接口调用地址。不要把接口地址或其中的 Token 写入仓库。
+
+可以用 GitHub CLI 交互式添加，运行后粘贴完整接口地址并按回车：
+
+```sh
+gh secret set BAIDU_SUBMIT_ENDPOINT --repo qianmokano/kano-blog
+```
+
 文章和项目可在 frontmatter 中设置 `cover: ./cover.png` 和 `coverAlt: 图片说明`。封面会显示在详情页，并由 Astro 生成 1200×630 PNG 用作分享图；请避免把重要内容放在可能被裁切的边缘。未设置封面时，构建会为每篇文章和项目生成包含标题的独立 PNG，默认分享图为 `/og/default.png`。生成使用随项目保存的 Noto Sans SC 字体，不需要联网。
 
 搜索支持“加载更多”、失败重试和完整搜索页的 `?q=关键词` 链接。返回搜索页或刷新时会恢复当前历史记录中已加载的结果数量与阅读位置。手机文章目录默认折叠，可在阅读过程中打开并跳转章节。
@@ -92,7 +100,7 @@ PUBLIC_GISCUS_CATEGORY_ID=DIC_kwDOUJftF84DEj-1
 - Build output directory：`dist`
 - Node.js：22
 
-在同一个 Cloudflare Pages 项目中保留 `blog.thekanojyo.com` 和 `blog.kanojyo.de` 两个自定义域名。旧域名保持直接访问，不设置到主域名的强制跳转；canonical、RSS、站点地图和分享元数据统一使用新主域名。两者共用部署，备用域名提供另一个访问入口，不是独立托管的灾备站点。确认 Cloudflare 提供的目标记录与现有 DNS 用途后再修改 DNS，不要直接覆盖未知记录。最后在 Cloudflare 控制台启用 Web Analytics。
+在 Cloudflare Pages 项目中使用 `blog.thekanojyo.com` 作为主域名。旧域名 `blog.kanojyo.de` 在 Cloudflare 边缘按原路径和查询参数 301 重定向到新域名；canonical、RSS、站点地图和分享元数据统一使用新主域名。迁移期间保留旧域名的 DNS、HTTPS 和重定向。确认 Cloudflare 提供的目标记录与现有 DNS 用途后再修改 DNS，不要直接覆盖未知记录。最后在 Cloudflare 控制台启用 Web Analytics。
 
 推送和 Pull Request 会通过 GitHub Actions 执行类型检查、格式检查、单元测试、生产构建、Pagefind 搜索和 Playwright 可访问性测试。
 
