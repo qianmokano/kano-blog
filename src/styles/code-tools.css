@@ -1,0 +1,50 @@
+.code-block {
+	position: relative;
+	margin-block: 2rem;
+	overflow: hidden;
+}
+
+.prose .code-block pre {
+	margin: 0;
+}
+
+.code-block .copy-code {
+	z-index: 2;
+}
+
+.code-block .copy-code:disabled {
+	cursor: wait;
+	opacity: 0.72;
+}
+
+.code-block__edge {
+	position: absolute;
+	z-index: 1;
+	top: 1px;
+	bottom: 1px;
+	width: 2rem;
+	pointer-events: none;
+	opacity: 0;
+	transition: opacity 140ms ease;
+}
+
+.code-block__edge--left {
+	left: 0;
+	background: linear-gradient(to right, var(--code-bg), transparent);
+}
+
+.code-block__edge--right {
+	right: 0;
+	background: linear-gradient(to left, var(--code-bg), transparent);
+}
+
+.code-block[data-overflow-left] .code-block__edge--left,
+.code-block[data-overflow-right] .code-block__edge--right {
+	opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.code-block__edge {
+		transition: none;
+	}
+}

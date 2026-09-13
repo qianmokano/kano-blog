@@ -8,6 +8,9 @@ import { formatDate, getReadingTime, normalizeTagSlug } from '@/lib/content';
 import { siteConfig } from '@/lib/site';
 import { absoluteSiteUrl, authorSchema, createBreadcrumbSchema } from '@/lib/structured-data';
 import { getSocialImage } from '@/lib/social-image';
+import '@/styles/code-tools.css';
+import '@/styles/image-viewer.css';
+import '@/styles/reading-motion.css';
 
 interface Props {
 	post: CollectionEntry<'blog'>;
@@ -90,6 +93,7 @@ const toc = headings.filter((heading) => heading.depth === 2 || heading.depth ==
 							<span class="toc-current" data-toc-current>
 								{toc[0].text}
 							</span>
+							<span class="toc-toggle-icon" aria-hidden="true" />
 						</summary>
 						<TocLinks headings={toc} />
 					</details>
@@ -161,25 +165,9 @@ const toc = headings.filter((heading) => heading.depth === 2 || heading.depth ==
 </BaseLayout>
 
 <script>
-	document.querySelectorAll<HTMLElement>('.prose pre').forEach((block) => {
-		if (block.querySelector('.copy-code')) return;
-		const button = document.createElement('button');
-		button.type = 'button';
-		button.className = 'copy-code';
-		button.textContent = '复制';
-		button.setAttribute('aria-label', '复制代码');
-		button.addEventListener('click', async () => {
-			const code = block.querySelector('code')?.textContent ?? '';
-			try {
-				await navigator.clipboard.writeText(code);
-				button.textContent = '已复制';
-			} catch {
-				button.textContent = '复制失败';
-			}
-			setTimeout(() => (button.textContent = '复制'), 1600);
-		});
-		block.append(button);
-	});
+	import '@/scripts/code-tools';
+	import '@/scripts/image-viewer';
+	import '@/scripts/heading-feedback';
 
 	const toc = document.querySelector<HTMLElement>('.article-toc');
 	const mobileToc = document.querySelector<HTMLDetailsElement>('.mobile-toc');

@@ -45,16 +45,21 @@ test('reduced motion shows the open icon without an animation', async ({ page })
 	await expect(topLine).toHaveCSS('transition-duration', '0s');
 	await expect(middleLine).toHaveCSS('opacity', '0');
 	await expect(bottomLine).toHaveCSS('transition-duration', '0s');
-	const iconCenter = await menu.locator('.menu-icon').evaluate((element) => {
-		const box = element.getBoundingClientRect();
-		return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+	// Measure the icon and its lines in the same frame, including touch hover movement.
+	const offsets = await menu.locator('.menu-icon').evaluate((element) => {
+		const icon = element.getBoundingClientRect();
+		return [...element.querySelectorAll('.menu-icon-line-top, .menu-icon-line-bottom')].map(
+			(line) => {
+				const box = line.getBoundingClientRect();
+				return {
+					x: box.x + box.width / 2 - (icon.x + icon.width / 2),
+					y: box.y + box.height / 2 - (icon.y + icon.height / 2),
+				};
+			},
+		);
 	});
-	for (const line of [topLine, bottomLine]) {
-		const center = await line.evaluate((element) => {
-			const box = element.getBoundingClientRect();
-			return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
-		});
-		expect(Math.abs(center.x - iconCenter.x)).toBeLessThan(0.5);
-		expect(Math.abs(center.y - iconCenter.y)).toBeLessThan(0.5);
+	for (const offset of offsets) {
+		expect(Math.abs(offset.x)).toBeLessThan(0.5);
+		expect(Math.abs(offset.y)).toBeLessThan(0.5);
 	}
 });
