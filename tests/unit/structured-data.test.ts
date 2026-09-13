@@ -8,16 +8,16 @@ import {
 
 describe('structured data utilities', () => {
 	it('builds absolute site URLs', () => {
-		expect(absoluteSiteUrl('/blog/example/')).toBe('https://blog.kanojyo.de/blog/example/');
+		expect(absoluteSiteUrl('/blog/example/')).toBe('https://blog.thekanojyo.com/blog/example/');
 	});
 
 	it('identifies the author through the local profile and external identity', () => {
 		expect(authorSchema).toEqual({
 			'@type': 'Person',
-			'@id': 'https://blog.kanojyo.de/about/#person',
+			'@id': 'https://blog.thekanojyo.com/about/#person',
 			name: 'Kano',
 			alternateName: 'qianmokano',
-			url: 'https://blog.kanojyo.de/about/',
+			url: 'https://blog.thekanojyo.com/about/',
 			sameAs: ['https://github.com/qianmokano'],
 		});
 	});
@@ -35,13 +35,13 @@ describe('structured data utilities', () => {
 					'@type': 'ListItem',
 					position: 1,
 					name: '首页',
-					item: 'https://blog.kanojyo.de/',
+					item: 'https://blog.thekanojyo.com/',
 				},
 				{
 					'@type': 'ListItem',
 					position: 2,
 					name: '文章',
-					item: 'https://blog.kanojyo.de/blog/',
+					item: 'https://blog.thekanojyo.com/blog/',
 				},
 			],
 		});
@@ -52,7 +52,7 @@ describe('structured data utilities', () => {
 		expect(createProfilePageSchema({ description: '关于 Kano。', dateModified })).toEqual({
 			'@context': 'https://schema.org',
 			'@type': 'ProfilePage',
-			url: 'https://blog.kanojyo.de/about/',
+			url: 'https://blog.thekanojyo.com/about/',
 			description: '关于 Kano。',
 			dateModified: dateModified.toISOString(),
 			mainEntity: authorSchema,

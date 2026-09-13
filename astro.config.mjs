@@ -4,7 +4,7 @@ import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
-	site: 'https://blog.kanojyo.de',
+	site: 'https://blog.thekanojyo.com',
 	trailingSlash: 'always',
 	integrations: [mdx(), sitemap({ filter: (page) => !page.endsWith('/search/') })],
 	markdown: {

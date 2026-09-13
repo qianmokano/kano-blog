@@ -23,9 +23,13 @@ test('article metadata and navigation render', async ({ page }) => {
 	await expect(page.locator('meta[property="og:type"]')).toHaveAttribute('content', 'article');
 	await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
 		'href',
-		'https://blog.kanojyo.de/blog/hello-kano/',
+		'https://blog.thekanojyo.com/blog/hello-kano/',
 	);
 	await expect(page.getByText('分钟阅读')).toBeVisible();
+	// The backup domain must not depend on the primary host for comment styling.
+	const commentTheme = await page.locator('[data-giscus-root] script').getAttribute('data-theme');
+	expect(new URL(commentTheme!).origin).toBe(new URL(page.url()).origin);
+	expect(new URL(commentTheme!).pathname).toMatch(/^\/giscus-(light|dark)\.css$/);
 });
 
 test('structured data connects profiles and page breadcrumbs', async ({ page }) => {
@@ -35,7 +39,7 @@ test('structured data connects profiles and page breadcrumbs', async ({ page }) 
 	expect(articleData[0]).toMatchObject({
 		author: {
 			'@type': 'Person',
-			url: 'https://blog.kanojyo.de/about/',
+			url: 'https://blog.thekanojyo.com/about/',
 			sameAs: ['https://github.com/qianmokano'],
 		},
 	});
@@ -84,8 +88,8 @@ test('feed, sitemap, robots and custom not-found page are available', async ({ r
 	}
 	const sitemap = await request.get('/sitemap-0.xml');
 	const sitemapBody = await sitemap.text();
-	expect(sitemapBody).toContain('https://blog.kanojyo.de/blog/hello-kano/');
-	expect(sitemapBody).not.toContain('https://blog.kanojyo.de/search/');
+	expect(sitemapBody).toContain('https://blog.thekanojyo.com/blog/hello-kano/');
+	expect(sitemapBody).not.toContain('https://blog.thekanojyo.com/search/');
 	// Pagefind's local static server does not apply Cloudflare's 404 fallback,
 	// so verify the generated custom document directly.
 	await page.goto('/404.html');

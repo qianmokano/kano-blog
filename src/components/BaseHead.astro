@@ -1,4 +1,6 @@
 ---
+import interFont from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
+import monoFont from '@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2?url';
 import { siteConfig } from '@/lib/site';
 import type { SocialImage } from '@/lib/social-image';
 
@@ -33,6 +35,8 @@ const socialImage = new URL(imageData.src, siteConfig.url);
 
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preload" href={interFont} as="font" type="font/woff2" crossorigin="anonymous" />
+<link rel="preload" href={monoFont} as="font" type="font/woff2" crossorigin="anonymous" />
 <meta name="generator" content={Astro.generator} />
 <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)" />
 <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />

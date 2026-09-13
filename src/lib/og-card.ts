@@ -60,7 +60,7 @@ export function renderOgCard({ title, label, detail }: OgCard) {
 			<text x="72" y="491" font-size="23" fill="#696969">${escapeXml(wrapTitle(detail, 42, 1)[0] ?? '')}</text>
 			<path d="M72 535H1128" stroke="#d7d7d7"/>
 			<text x="72" y="583" font-size="22">qianmokano</text>
-			<text x="1128" y="583" font-size="22" text-anchor="end" fill="#696969">blog.kanojyo.de</text>
+			<text x="1128" y="583" font-size="22" text-anchor="end" fill="#696969">blog.thekanojyo.com</text>
 		</g>
 	</svg>`;
 	// Bundled font keeps local and CI builds identical without network or system fonts.

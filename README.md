@@ -1,6 +1,6 @@
 # Kano Blog
 
-Kano 的个人博客，使用 Astro、TypeScript、MDX、Pagefind 和 Giscus 构建。网站完全静态生成，正式地址为 [blog.kanojyo.de](https://blog.kanojyo.de)。
+Kano 的个人博客，使用 Astro、TypeScript、MDX、Pagefind 和 Giscus 构建。网站完全静态生成，主域名为 [blog.thekanojyo.com](https://blog.thekanojyo.com)，备用域名为 [blog.kanojyo.de](https://blog.kanojyo.de)。
 
 ## 本地开发
 
@@ -92,7 +92,7 @@ PUBLIC_GISCUS_CATEGORY_ID=DIC_kwDOUJftF84DEj-1
 - Build output directory：`dist`
 - Node.js：22
 
-首次部署成功后再绑定 `blog.kanojyo.de`。确认 Cloudflare 提供的目标记录与现有 DNS 用途后再修改 DNS，不要直接覆盖未知记录。最后在 Cloudflare 控制台启用 Web Analytics。
+在同一个 Cloudflare Pages 项目中保留 `blog.thekanojyo.com` 和 `blog.kanojyo.de` 两个自定义域名。旧域名保持直接访问，不设置到主域名的强制跳转；canonical、RSS、站点地图和分享元数据统一使用新主域名。两者共用部署，备用域名提供另一个访问入口，不是独立托管的灾备站点。确认 Cloudflare 提供的目标记录与现有 DNS 用途后再修改 DNS，不要直接覆盖未知记录。最后在 Cloudflare 控制台启用 Web Analytics。
 
 推送和 Pull Request 会通过 GitHub Actions 执行类型检查、格式检查、单元测试、生产构建、Pagefind 搜索和 Playwright 可访问性测试。
 
