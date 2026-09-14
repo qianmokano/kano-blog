@@ -58,80 +58,11 @@ const websiteSchema = {
 		</main>
 		<Footer />
 		<SearchDialog />
-		<script is:inline>
-			(() => {
-				const root = document.documentElement;
-				const themes = ['system', 'dark', 'light'];
-				const labels = {
-					system: '当前跟随系统，点击切换为深色',
-					dark: '当前为深色，点击切换为浅色',
-					light: '当前为浅色，点击切换为跟随系统',
-				};
-				const applyTheme = (theme) => {
-					root.dataset.theme = theme;
-					root.style.colorScheme = theme === 'system' ? 'light dark' : theme;
-					try {
-						if (theme === 'system') localStorage.removeItem('theme');
-						else localStorage.setItem('theme', theme);
-					} catch {}
-					document
-						.querySelectorAll('[data-theme-toggle]')
-						.forEach((button) => button.setAttribute('aria-label', labels[theme]));
-				};
-				document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
-					button.addEventListener('click', () => {
-						const current = root.dataset.theme || 'system';
-						applyTheme(themes[(themes.indexOf(current) + 1) % themes.length]);
-					});
-				});
-				applyTheme(root.dataset.theme || 'system');
 
-				const dialog = document.querySelector('[data-search-dialog]');
-				const input = dialog?.querySelector('[data-pagefind-input]');
-				let searchOpener;
-				const openSearch = () => {
-					if (dialog instanceof HTMLDialogElement && !dialog.open) {
-						searchOpener = document.activeElement;
-						dialog.showModal();
-						requestAnimationFrame(() => input?.focus());
-					}
-				};
-				const closeSearch = () => {
-					if (dialog instanceof HTMLDialogElement) dialog.close();
-				};
-				dialog?.addEventListener('close', () => {
-					requestAnimationFrame(() => {
-						if (!dialog.open && searchOpener instanceof HTMLElement) searchOpener.focus();
-					});
-				});
-				dialog?.addEventListener('keydown', (event) => {
-					// Search inputs can consume Escape to clear their value before the dialog closes.
-					if (event.key === 'Escape' && !event.isComposing) {
-						event.preventDefault();
-						closeSearch();
-					}
-				});
-				document
-					.querySelectorAll('[data-search-open]')
-					.forEach((button) => button.addEventListener('click', openSearch));
-				dialog?.querySelector('[data-search-close]')?.addEventListener('click', closeSearch);
-				dialog?.addEventListener('click', (event) => {
-					if (event.target === dialog) closeSearch();
-				});
-				document.addEventListener('keydown', (event) => {
-					if (
-						(event.key === '/' && !/input|textarea/i.test(document.activeElement?.tagName || '')) ||
-						((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k')
-					) {
-						event.preventDefault();
-						openSearch();
-					}
-				});
-			})();
-		</script>
 		<script is:inline src="/scripts/search.js"></script>
 		<script>
 			import '@/scripts/motion-system';
+			import '@/scripts/theme-motion';
 		</script>
 	</body>
 </html>

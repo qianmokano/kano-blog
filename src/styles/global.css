@@ -78,7 +78,8 @@
 }
 
 html {
-	view-transition-name: none;
+	/* Capture the viewport so a scrolled page keeps its position in the fade. */
+	view-transition-name: page-content;
 	background: var(--bg);
 	color: var(--text);
 	font-family: var(--font-sans);
@@ -91,13 +92,24 @@ html {
 	navigation: auto;
 }
 
-::view-transition {
-	/* Keep scrolled content snapshots below the live glass header. */
+::view-transition-group(page-content) {
+	/* Clip only the page snapshot, leaving the separate header visible. */
 	clip-path: inset(var(--header-height) 0 0);
+	animation: none;
 }
 
-::view-transition-group(page-content) {
+::view-transition-group(site-header) {
+	z-index: 3;
 	animation: none;
+}
+
+::view-transition-old(site-header) {
+	display: none;
+}
+
+::view-transition-new(site-header) {
+	animation: none;
+	mix-blend-mode: normal;
 }
 
 ::view-transition-old(page-content) {
@@ -120,8 +132,55 @@ html {
 	mix-blend-mode: normal;
 }
 
+::view-transition-old(content-title) {
+	animation: page-fade-out 80ms ease-in both;
+}
+
+::view-transition-new(content-title) {
+	animation: page-fade-in 160ms ease-out 40ms both;
+}
+
 [data-transition-title-target] {
 	view-transition-name: content-title;
+}
+
+html.theme-transition {
+	view-transition-name: root;
+	transition: none !important;
+}
+
+html.theme-instant,
+html.theme-instant *,
+html.theme-instant *::before,
+html.theme-instant *::after {
+	transition: none !important;
+}
+
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+	view-transition-name: none !important;
+	transition: none !important;
+}
+
+html.theme-transition::view-transition {
+	clip-path: none;
+	pointer-events: none;
+}
+
+html.theme-transition::view-transition-group(root) {
+	animation: none;
+}
+
+html.theme-transition::view-transition-old(root),
+html.theme-transition::view-transition-new(root) {
+	animation: none;
+	mix-blend-mode: normal;
+}
+
+html.theme-transition::view-transition-new(root) {
+	z-index: 1;
+	clip-path: circle(0% at var(--theme-reveal-x) var(--theme-reveal-y));
 }
 
 @keyframes page-fade-out {
@@ -251,30 +310,20 @@ h4 {
 }
 
 .site-header {
+	view-transition-name: site-header;
 	position: sticky;
 	z-index: 50;
 	top: 0;
 	border-bottom: 1px solid transparent;
-	background: transparent;
-}
-
-.site-header::before {
-	position: absolute;
-	z-index: 0;
-	inset: 0;
+	/* Filter on the snapshot owner: a child cannot sample beyond its backdrop root. */
 	background: var(--surface-translucent);
 	-webkit-backdrop-filter: blur(18px) saturate(120%);
 	backdrop-filter: blur(18px) saturate(120%);
-	content: '';
-	pointer-events: none;
 }
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
 	.site-header {
 		border-color: var(--line);
-	}
-
-	.site-header::before {
 		background: var(--bg);
 	}
 }
@@ -487,7 +536,6 @@ h4 {
 }
 
 main {
-	view-transition-name: page-content;
 	min-height: calc(100vh - 12rem);
 }
 
@@ -1529,6 +1577,16 @@ main {
 	padding: 0.9rem 0;
 	border-top: 1px solid var(--line);
 	text-decoration: none;
+	transition:
+		background-color 120ms ease,
+		box-shadow 120ms ease,
+		border-color 120ms ease;
+}
+
+.search-result:focus {
+	background: var(--code-bg);
+	box-shadow: inset 2px 0 var(--text);
+	outline-offset: -2px;
 }
 
 .search-result:hover strong {

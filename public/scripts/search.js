@@ -1,4 +1,46 @@
 (() => {
+	const dialog = document.querySelector('[data-search-dialog]');
+	const input = dialog?.querySelector('[data-pagefind-input]');
+	let searchOpener;
+	const openSearch = () => {
+		if (dialog instanceof HTMLDialogElement && !dialog.open) {
+			searchOpener = document.activeElement;
+			dialog.showModal();
+			requestAnimationFrame(() => input?.focus());
+		}
+	};
+	const closeSearch = () => {
+		if (dialog instanceof HTMLDialogElement) dialog.close();
+	};
+	dialog?.addEventListener('close', () => {
+		requestAnimationFrame(() => {
+			if (!dialog.open && searchOpener instanceof HTMLElement) searchOpener.focus();
+		});
+	});
+	dialog?.addEventListener('keydown', (event) => {
+		// Search inputs can consume Escape to clear their value before the dialog closes.
+		if (event.key === 'Escape' && !event.isComposing) {
+			event.preventDefault();
+			closeSearch();
+		}
+	});
+	document
+		.querySelectorAll('[data-search-open]')
+		.forEach((button) => button.addEventListener('click', openSearch));
+	dialog?.querySelector('[data-search-close]')?.addEventListener('click', closeSearch);
+	dialog?.addEventListener('click', (event) => {
+		if (event.target === dialog) closeSearch();
+	});
+	document.addEventListener('keydown', (event) => {
+		if (
+			(event.key === '/' && !/input|textarea/i.test(document.activeElement?.tagName || '')) ||
+			((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k')
+		) {
+			event.preventDefault();
+			openSearch();
+		}
+	});
+
 	const pageSize = 12;
 	let pagefind;
 	let loading;
@@ -273,6 +315,33 @@
 			update();
 		});
 		input.addEventListener('input', () => update());
+		root.addEventListener('keydown', (event) => {
+			if (
+				composing ||
+				event.isComposing ||
+				event.altKey ||
+				event.ctrlKey ||
+				event.metaKey ||
+				event.shiftKey ||
+				(event.key !== 'ArrowDown' && event.key !== 'ArrowUp')
+			)
+				return;
+			const links = [...results.querySelectorAll('.search-result')];
+			if (!links.length) return;
+			const index = links.indexOf(document.activeElement);
+			if (document.activeElement !== input && index < 0) return;
+			event.preventDefault();
+			const target =
+				document.activeElement === input
+					? event.key === 'ArrowDown'
+						? links[0]
+						: links.at(-1)
+					: event.key === 'ArrowUp'
+						? links[index - 1] || input
+						: links[Math.min(index + 1, links.length - 1)];
+			target.focus({ preventScroll: true });
+			target.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'instant' });
+		});
 		more.addEventListener('click', () => {
 			if (!busy) void loadBatch(requestId, shown + pageSize, true, 'more');
 		});
