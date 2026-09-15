@@ -1,407 +1,595 @@
 ---
-title: 拿到新的 VPS 后，你应该先做什么？
-description: 一份面向 Ubuntu 24.04 的 VPS 初始化与安全加固清单，涵盖用户、SSH、UFW、Fail2ban、Docker 与反向代理。
+title: VPS 新机初始化与安全加固（Ubuntu 24.04）
+description: 面向 Ubuntu 24.04 的 VPS 初始化、SSH、防火墙、Fail2ban、Docker 与反向代理配置指南。
 publishedAt: 2026-08-31T20:19:21+08:00
+updatedAt: 2026-09-15
 tags:
   - Linux
   - VPS
   - 安全
-featured: true
+  - Ubuntu
 draft: false
+featured: true
 comments: true
 ---
 
-刚拿到一台 VPS 时，我通常不会立刻部署服务，而是先完成系统更新、普通用户、SSH、防火墙和备份入口等基础工作。下面以 Ubuntu 24.04 为例，整理一套可以逐项验证的初始化流程。
+恭喜你拥有了一台属于自己的云服务器（VPS）！这是一片充满无限可能的数字天地。但在你开始部署网站、搭建应用之前，务必先花上 15-30 分钟，完成一些至关重要的基础设置。这不仅能保护你的服务器免受最常见的网络攻击，还能为你未来的管理工作提供便利。
 
-> 本文整理自我的 Notion 笔记，并参考了 [Ubuntu Server](https://documentation.ubuntu.com/server/how-to/security/openssh-server/)、[Docker Engine](https://docs.docker.com/engine/install/ubuntu/) 等官方文档。修改 SSH 和防火墙前，请保留当前会话，并确认云服务商提供网页控制台或救援模式。原始讨论见 [LINUX DO](https://linux.do/t/topic/817769)。
+本文将以一台全新的、基于 Ubuntu 24.04 系统的 VPS 为例，手把手带你完成从登录到基础加固的全过程。
 
-## 开始之前
+## 准备工作
 
-准备好服务商提供的服务器 IP、`root` 初始密码，以及一个准备长期使用的域名。如果服务商支持安全组，还要确认它没有提前拦截 SSH。
+在开始之前，你需要从你的 VPS 提供商那里获取三个关键信息：
 
-第一次连接服务器：
+- **服务器的 IP 地址**（例如：`192.0.2.1`）
+- **初始用户名**（通常是 `root`）
+- **初始密码**
 
-```bash
-ssh root@server_ip
-```
+你还需要一个 SSH 客户端工具。如果你使用的是 macOS 或 Linux，可以直接使用系统自带的“终端”（Terminal）。如果你使用的是 Windows，推荐使用 [Windows Terminal](https://www.microsoft.com/en-us/p/windows-terminal/9n0dx20hk701)（内置 SSH）或经典的 [PuTTY](https://www.putty.org/)。或者 VSCode 的 [Remote-SSH](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh)。
 
-首次连接时，SSH 会询问是否信任主机指纹。最好在服务商控制台核对指纹后再确认，而不是无条件输入 `yes`。
+## 首次登录与更新系统
 
-所有高风险操作都遵循三个原则：
-
-1. 不要关闭当前 SSH 会话。
-2. 每改一项配置，先验证，再从新终端测试连接。
-3. 新连接确认可用后，才继续收紧旧的登录方式。
-
-## 1. 更新系统
-
-先刷新软件包索引并安装更新：
+首先，我们以 `root` 用户身份登录到服务器。`root` 是 Linux 系统中的超级管理员，拥有最高权限。
 
 ```bash
-apt update
-apt upgrade -y
+ssh root@你的服务器IP地址
 ```
 
-如果更新包含内核、OpenSSL 或 systemd，可以在完成后重启：
+连接过程中，系统可能会询问你是否信任该主机的指纹，输入 `yes` 并回车。接着，输入你的**初始密码**。成功登录后，你将看到服务器的命令行欢迎信息。
 
 ```bash
-reboot
+# 查看系统基本信息
+uname -a
 ```
 
-等待服务器重新上线，再重新连接。不要在未确认 SSH 能重连时直接进入后面的配置。
-
-## 2. 创建日常管理用户
-
-长期使用 `root` 登录会放大误操作和凭据泄露的风险。创建一个普通用户，并按需通过 `sudo` 提权：
+**登录后的首要任务是更新系统。** 这可以确保所有已安装的软件包都打上了最新的安全补丁。
 
 ```bash
-adduser kano
-usermod -aG sudo kano
+# 更新软件包列表信息
+sudo apt update
+
+# 升级所有已安装的软件包
+sudo apt upgrade -y
 ```
 
-把 `kano` 换成自己的用户名。然后切换过去，确认提权正常：
+这里的 `-y` 参数会自动确认所有升级提示，节省时间。
 
-```bash
-su - kano
-sudo whoami
-```
+## 创建新用户并授予管理员权限
 
-输出应为 `root`。从这里开始，除非特别说明，命令都以这个普通用户执行。
+一直使用 `root` 用户操作服务器是一个非常危险的习惯。任何误操作都可能对系统造成毁灭性打击，并且它也是黑客们最喜欢攻击的目标。因此，我们需要创建一个新的日常使用账户，并赋予它 `sudo` 权限（即在需要时临时获取管理员权限）。
 
-## 3. 配置 SSH 密钥
+1. **创建一个新用户**（将 `your_username` 替换为你想要的用户名）：
 
-SSH 密钥通常比可被猜测或复用的密码更适合作为日常登录凭据。先在自己的电脑上生成密钥；如果已经有合适的密钥，可以跳过生成步骤。
+   ```bash
+   adduser your_username
+   ```
 
-```bash
-ssh-keygen -t ed25519 -a 100
-```
+   系统会提示你设置新用户的密码和一些可选的个人信息（可以直接回车跳过）。请务必设置一个**强密码**。
 
-为私钥设置口令，然后把公钥复制到服务器的新用户：
+2. **授予** **`sudo`** **权限**：
 
-```bash
-ssh-copy-id kano@server_ip
-```
+   ```bash
+   usermod -aG sudo your_username
+   ```
 
-如果本机没有 `ssh-copy-id`，也可以查看公钥并手动放进服务器的 `~/.ssh/authorized_keys`：
+   这条命令将新创建的用户添加到了 `sudo` 用户组，使其能够执行管理员命令。
 
-```bash
-cat ~/.ssh/id_ed25519.pub
-```
+3. **验证新用户**：现在，退出 `root` 登录（`exit`），然后用你的新用户名重新登录：
 
-服务器上的目录和文件权限应当足够严格：
+   ```bash
+   ssh your_username@你的服务器IP地址
+   ```
 
-```bash
-chmod 700 ~/.ssh
-chmod 600 ~/.ssh/authorized_keys
-```
+   登录后，尝试执行一个需要 `sudo` 的命令来验证权限是否生效，比如更新软件包列表：
 
-现在打开一个新终端，验证密钥登录：
+   ```bash
+   sudo apt update
+   ```
 
-```bash
-ssh kano@server_ip
-```
+   系统会要求你输入你自己的密码（而不是 root 密码）。如果命令成功执行，说明权限配置正确。
 
-只有这一步成功后，才可以禁用密码和 `root` 登录。
+## 加固 SSH 服务，提升安全性
 
-## 4. 启用 UFW 防火墙
+SSH 是我们远程管理服务器的唯一入口，保护好它至关重要。
 
-Ubuntu 默认提供 UFW。先设置默认策略，再明确放行当前使用的 SSH 服务：
+1. **禁用** **`root`** **用户远程登录**：既然我们已经有了 `sudo` 用户，就应该禁止 `root` 直接通过 SSH 登录。用你喜欢的文本编辑器（如 `nano` 或 `vim`）打开 SSH 配置文件。`nano` 对新手更友好。
 
-```bash
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
-sudo ufw allow OpenSSH
-sudo ufw enable
-sudo ufw status verbose
-```
+   ```bash
+   sudo vim /etc/ssh/sshd_config
+   ```
 
-启用后不要退出当前会话，先从另一个终端再次连接。如果连接失败，可以利用仍然打开的旧会话检查规则。
+   在文件中找到 `PermitRootLogin` 这一行，修改为 `no`：
 
-后续部署网站时再放行 HTTP 和 HTTPS：
+   ```text
+   PermitRootLogin no
+   ```
 
-```bash
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-```
+   如果这一行前面有 `#`，请将 `#` 删除。
 
-不需要的端口不要因为“以后可能会用”而提前开放。
-
-### 要不要修改 SSH 端口？
-
-修改默认的 22 端口只能减少自动扫描产生的噪音，不能代替密钥登录、防火墙和 Fail2ban。Ubuntu 24.04 的 OpenSSH 还使用 systemd socket activation，端口变更比修改一行配置更容易出错。因此，没有明确需求时保留 22 端口是完全合理的。
-
-如果确实需要修改，先在防火墙和云服务商安全组中放行新端口，验证 SSH 配置，并在新终端测试成功后再删除旧规则。不要先关闭 22 端口再尝试连接。
-
-## 5. 收紧 SSH 登录
-
-Ubuntu 支持在 `/etc/ssh/sshd_config.d/` 中添加配置片段。使用文件名前缀 `00-`，可以让规则在常见的 `50-cloud-init.conf` 之前生效：
-
-```bash
-sudo nano /etc/ssh/sshd_config.d/00-hardening.conf
-```
-
-写入：
+2. **（强烈推荐）更改默认 SSH 端口**：SSH 默认使用 22 端口，这使得它成为自动化扫描和攻击的首要目标。通过更改端口，可以有效避开大部分的自动攻击。在同一个配置文件（`/etc/ssh/sshd_config`）中，找到 `#Port 22` 这一行。首先去掉 `#`，然后将 `22` 改成一个不常用的端口号（范围建议在 1024-65535 之间，例如 1126）。
 
 ```text
-PermitRootLogin no
-PubkeyAuthentication yes
-PasswordAuthentication no
-KbdInteractiveAuthentication no
+Port 1126
 ```
 
-先检查语法，再查看 SSH 最终采用的配置：
+保存文件并退出（`nano` 中按 `Ctrl+X`，然后按 `Y`，最后按回车）。
+
+修改 socket 配置文件：
 
 ```bash
-sudo sshd -t
-sudo sshd -T | grep -E 'permitrootlogin|pubkeyauthentication|passwordauthentication|kbdinteractiveauthentication'
+sudo EDITOR=vim systemctl edit ssh.socket
 ```
 
-确认输出符合预期后重启服务：
+把编辑器里注释后的空白区域替换为以下内容（确保替换注释下方的 “Edits below this comment will be discarded” 那一段之前的区域）：
+
+```text
+[Socket]
+ListenStream=1126
+```
+
+保存并退出（vim 用 `:wq`，nano 用 `Ctrl+O` 回车然后 `Ctrl+X`）。
+
+**重要提示**：在修改端口后，请务必先配置好防火墙（下一步）并允许新端口通过，否则你可能会将自己锁在服务器外面！3. **应用改动并重启 socket / ssh 服务**：
+
+在 shell 里运行：
 
 ```bash
+sudo systemctl daemon-reload
+sudo systemctl restart ssh.socket
 sudo systemctl restart ssh
+sudo systemctl restart sshd
 ```
 
-保持当前会话不动，用另一个终端再次执行：
+**不要立即关闭当前的 SSH 连接！** 打开一个新的终端窗口，尝试用**新的端口**和**新的用户名**登录，确保一切正常。
 
 ```bash
-ssh kano@server_ip
+ssh -p 新端口号 your_username@你的服务器IP地址
+# 示例: ssh -p 2255 your_username@192.0.2.1
 ```
 
-最后确认 `root` 和密码登录已被拒绝。若验证失败，使用尚未关闭的会话修正配置；若会话已经断开，则通过服务商的网页控制台恢复。
+确认新连接成功后，再关闭旧的连接。
 
-## 6. 安装 Fail2ban
+## 配置基础防火墙
 
-密钥登录已经挡住了多数密码猜测，但 Fail2ban 仍可用于减少持续扫描带来的日志噪音和资源消耗。
+防火墙是服务器的第一道防线。UFW（Uncomplicated Firewall）是一个非常易于使用的防火墙管理工具，使用系统底层的 `iptables` 进行设置。
+
+1. **安装 UFW**（通常已预装）：
+
+   ```bash
+   sudo apt install ufw
+   ```
+
+2. **设置默认规则**：先禁止所有传入连接，允许所有传出连接。这是一个安全的基准。
+
+   ```bash
+   sudo ufw default deny incoming
+   sudo ufw default allow outgoing
+   ```
+
+3. **允许必要的连接**：我们需要允许 SSH、HTTP 和 HTTPS 的流量进入。
+
+   - 如果你没有改 SSH 端口：
+
+     ```bash
+     sudo ufw allow ssh # 22端口
+     ```
+
+   - 如果你改了 SSH 端口（例如 1126）：
+
+     ```bash
+     sudo ufw allow 1126/tcp
+     ```
+
+   - 如果你计划部署网站，也需要允许 HTTP 和 HTTPS：
+
+     ```bash
+     sudo ufw allow http  # 80端口
+     sudo ufw allow https # 443端口
+     ```
+
+4. **启用防火墙**：
+
+   ```bash
+   sudo ufw enable
+   ```
+
+   系统会警告你这可能会中断现有连接，输入 `y` 确认。因为我们已经允许了 SSH 端口，所以连接不会中断。
+
+5. **检查防火墙状态**：
+
+   ```bash
+   sudo ufw status verbose
+   ```
+
+   这将显示所有规则和防火墙的当前状态。
+
+## 安装 Fail2ban 防御工具
+
+[Fail2ban](https://fail2ban.readthedocs.io/en/latest/)，顾名思义是防止后台暴力扫描的软件，通过分析系统日志中的异常行为（如多次登录失败），自动封禁可疑 IP 地址，有效抵御暴力破解攻击。推荐安装。
+
+安装 `Fail2ban`：
 
 ```bash
-sudo apt install fail2ban -y
-sudo nano /etc/fail2ban/jail.d/sshd.local
+sudo apt update && sudo apt install fail2ban
 ```
 
-写入一个简单的 SSH 规则：
+## 配置 Fail2ban
 
-```ini
-[sshd]
-enabled = true
-backend = systemd
-port = ssh
-maxretry = 5
-findtime = 10m
-bantime = 1h
-```
+1. **编辑配置文件**
 
-启动并检查状态：
+   ```bash
+   sudo vim /etc/fail2ban/jail.local
+   ```
+
+   常见配置参数：
+
+   ```text
+   [DEFAULT]
+   ignoreip = 127.0.0.1/8
+   bantime = 10h
+   findtime = 10m
+   maxretry = 5
+
+   [sshd]
+   enabled = true
+   port = 1126
+   backend = systemd
+   ```
+
+2. **重启服务**
+
+   ```bash
+   sudo systemctl restart fail2ban
+   sudo systemctl enable fail2ban  # 开机自启
+   ```
+
+查看一下状态：
 
 ```bash
-sudo systemctl enable --now fail2ban
 sudo fail2ban-client status
+```
+
+检查封禁列表：
+
+```bash
 sudo fail2ban-client status sshd
 ```
 
-如果修改过 SSH 端口，`port` 也要改成实际端口。不要把永久封禁当作默认策略，以免把自己的动态 IP 长期挡在门外。
+## 设置系统时间
 
-## 7. 设置时区和自动安全更新
+将系统时间设置为北京时间，推荐使用 `timedatectl` 命令。
 
-正确的时区能让系统日志、任务调度和故障排查更直观：
+北京时间的正确时区标识符是 `Asia/Shanghai`。您看到的错误消息是因为该工具要求使用较旧、不太常见的 POSIX 格式，但现代系统使用 Area/Location 格式。
+
+这是大多数现代 Linux 发行版（如 Ubuntu、Debian、CentOS 和 Fedora）的标准系统范围方法。
+
+1. 设置时区
+
+   在您的终端中运行以下命令。您可能需要 sudo 权限。
+
+   ```bash
+   sudo timedatectl set-timezone Asia/Shanghai
+   ```
+
+2. 验证更改
+
+   您可以通过运行以下任一命令来检查更改是否成功：
+
+   ```bash
+   timedatectl
+   ```
+
+   这将向您显示本地时间、世界标准时间（UTC）和当前设置的时区。
+
+   或者简单地：
+
+   ```bash
+   date
+   ```
+
+   输出现在应该显示 CST（中国标准时间）和正确的时间。
+
+---
+
+## 使用 SSH 密钥登录
+
+远程管理服务器的**标准做法**，它比密码登录更安全、更便捷。下面是一份详尽的指南，将带你完成从生成密钥到实现免密登录的全过程。
+
+这个过程分为两个主要步骤：
+
+1. **在你的本地电脑（客户端）上生成密钥对**。
+2. **将公钥上传到你的服务器（服务端）** 。
+
+---
+
+## 1、在你的本地电脑上生成 SSH 密钥对
+
+你需要先在自己的电脑（而不是服务器）上操作。密钥对由一个**私钥**和一个**公钥**组成：
+
+- **私钥（** **`id_ed25519`** **）** ：必须严格保密，留存在你的本地电脑上，相当于你的“身份证明”。
+- **公钥（** **`id_ed25519.pub`** **）** ：可以安全地分享，需要被放置在你想登录的服务器上，相当于一把“锁”。
+
+1. **打开终端**
+
+   - **macOS / Linux**：打开“终端”（Terminal）应用。
+   - **Windows**：打开 [Windows Terminal](https://www.microsoft.com/p/windows-terminal/9n0dx20hk701)、PowerShell 或 Git Bash。
+
+2. **运行密钥生成命令**
+
+   我们使用 `ssh-keygen` 命令来生成密钥。推荐使用现代且安全的 Ed25519 算法。
+
+   ```bash
+   ssh-keygen -t ed25519 -C "your_email@example.com"
+   ```
+
+   - `-t ed25519`：指定密钥类型为 Ed25519。如果你的系统很老不支持，可以换成 `rsa -b 4096`。
+   - `-C "your_email@example.com"`：添加一段注释，通常用邮箱来标识这个密钥是谁的、用在哪台电脑上，方便管理。
+
+3. **根据提示操作**
+
+   运行命令后，系统会问你几个问题：
+
+   - `Enter file in which to save the key (...):`
+     提示你保存密钥的位置。直接按回车即可，它会使用默认路径（通常是 `~/.ssh/id_ed25519`）。
+   - `Enter passphrase (empty for no passphrase):`
+     提示你为私钥设置一个密码（Passphrase）。这是一个非常重要的安全层！
+
+     - **强烈建议设置密码**：即使你的电脑被盗，私钥文件泄露，没有这个密码，别人也无法使用它。
+     - **不设置密码**：直接按回车。登录时会更方便，但安全性稍低。
+
+   - `Enter same passphrase again:`
+     再次输入你设置的密码进行确认。
+
+   完成后，你会在 `~/.ssh` 目录下看到两个新文件：`id_ed25519`（私钥）和 `id_ed25519.pub`（公钥）。
+
+## 2、将你的公钥复制到服务器
+
+要实现免密登录，你需要把刚刚生成的**公钥**（`id_ed25519.pub`）的内容，添加到服务器上你希望登录的那个用户的 `~/.ssh/authorized_keys` 文件中。
+
+以下介绍两种方法，**强烈推荐使用方法 A**。
+
+### 方法 1：使用 `ssh-copy-id`（最简单、最推荐）
+
+这个命令会自动完成所有操作，包括在服务器上创建目录、设置文件和修正权限，能有效避免手动操作的失误。
+
+1. **执行命令**
+
+   将 `your_username` 替换成你在服务器上的用户名，`server_ip` 替换成服务器的 IP 地址。
+
+   ```bash
+   ssh-copy-id -p 1126 your_username@server_ip
+   ```
+
+   - 如果你修改过 SSH 端口，可以使用 `-p` 参数：`ssh-copy-id -p 端口号 your_username@server_ip`
+   - 如果你的密钥不在默认路径，可以使用 `-i` 参数：`ssh-copy-id -i ~/.ssh/my_other_key.pub your_username@server_ip`
+
+2. **输入服务器密码**
+
+   系统会提示你输入 `your_username` 这个用户在服务器上的密码。这是你最后一次需要用密码登录。
+
+   输入密码后，命令会自动将你的公钥内容追加到服务器的 `~/.ssh/authorized_keys` 文件中。
+
+### 方法 2：手动复制粘贴（当没有 `ssh-copy-id` 时）
+
+如果你的本地电脑（比如某些 Windows 环境）没有 `ssh-copy-id` 命令，就需要手动操作。
+
+1. **在本地电脑上，显示并复制公钥内容**
+
+   ```bash
+   cat ~/.ssh/id_ed25519.pub
+   ```
+
+   终端会显示一长串以 `ssh-ed25519 ...` 开头的文本。**完整地复制这一整行**。
+
+2. **用密码登录到你的服务器**
+
+   ```bash
+   ssh your_username@server_ip
+   ```
+
+3. **在服务器上，将公钥写入 authorized_keys 文件**
+
+   登录服务器后，执行以下命令：
+
+   ```bash
+   # 确保 .ssh 目录存在
+   mkdir -p ~/.ssh
+
+   # 将你复制的公钥内容粘贴到这里，然后回车
+   echo "在这里粘贴你的公钥内容" >> ~/.ssh/authorized_keys
+
+   # 修正关键的目录和文件权限，这一步至关重要！
+   chmod 700 ~/.ssh
+   chmod 600 ~/.ssh/authorized_keys
+   ```
+
+   **注意**：如果权限不正确（例如过于开放），SSH 为了安全会拒绝使用密钥登录。`700` 意味着只有你自己能读、写、执行该目录，`600` 意味着只有你自己能读、写该文件。
+
+还可以使用一些 SSH 客户端（如 [XShell](https://www.xshell.com/en/xshell/)、[MobaXterm](https://mobaxterm.mobatek.net/)）能直接在客户端里面生成本地的密钥对，生成后能直接一键导入到服务器中，也是非常方便。像 [Termius](https://termius.com/) 这样能够云端同步的 SSH 客户端能够让你在不同设备上使用同一套密钥对，每次换不同设备，都不再需要重新生成密钥并添加到服务器里，有着极大的便利性还能集中管理多个 VPS 和密钥信息。不过***如果你的账号验证信息被泄露，那么你的全部密钥都遭殃，VPS 也都能被访问***。
+
+## 3、测试与收尾
+
+1. **测试免密登录**
+
+   退出服务器，然后再次尝试登录：
+
+   ```bash
+   ssh your_username@server_ip
+   ```
+
+   如果一切顺利，系统会直接让你登录，而不会再询问密码。如果你设置了密钥的密码（Passphrase），此时会提示你输入该密码。
+
+2. **（重要）禁用密码登录**
+
+   确认密钥登录成功后，为了达到最高的安全性，应该在服务器上禁用密码登录，只允许密钥登录。
+
+   - 在服务器上编辑 SSH 配置文件：
+
+     ```bash
+     sudo vim /etc/ssh/sshd_config
+     ```
+
+   - 找到 `PasswordAuthentication` 这一行，去掉前面的 `#`，并把值改为 `no`。
+
+     ```text
+     PasswordAuthentication no
+     ```
+
+   - 同时，可以确认 `PubkeyAuthentication` 是 `yes`（通常默认就是）。
+   - 保存文件（`Ctrl+X`、`Y`、`Enter`）并重启 SSH 服务。
+
+     ```bash
+     sudo systemctl restart sshd
+     ```
+
+**警告**：在执行这一步之前，**务必确保你的密钥登录已经测试成功**。否则，一旦禁用密码登录，你将无法再登入你的服务器！
+
+现在，你的服务器就配置好了高度安全的密钥登录方式。
+
+## 安装 Docker 和 Docker Compose 服务
+
+使用官方的一键安装[脚本](https://github.com/docker/docker-install)安装。
+
+安装脚本的目的是为了方便在受支持的 Linux 发行版上快速安装最新的 Docker-CE 版本。不建议依赖此脚本来部署到生产系统。有关在受支持的发行版上安装的更详细说明，请参阅[安装说明](https://docs.docker.com/engine/install/)。
+
+你只需运行以下两条命令，即可完成所有安装。
 
 ```bash
-sudo timedatectl set-timezone Asia/Shanghai
-timedatectl
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
 ```
 
-安装自动安全更新：
+脚本运行完毕后，Docker 和 Docker Compose 就安装好了。
+
+测试下自己的 VPS 有没有安装好 Docker 了：
 
 ```bash
-sudo apt install unattended-upgrades -y
-sudo dpkg-reconfigure --priority=low unattended-upgrades
+which docker # /usr/bin/docker
 ```
 
-自动更新不能替代维护。仍然要定期查看是否有需要重启的服务或内核：
+为了能不加 `sudo` 直接运行 Docker 命令，你仍需要执行一次用户权限设置：
 
 ```bash
-test -f /var/run/reboot-required && cat /var/run/reboot-required
+# 将当前用户添加到 docker 用户组
+sudo usermod -aG docker $USER
 ```
 
-## 8. 安装 Docker 和 Docker Compose
-
-生产环境建议使用 Docker 的官方 APT 仓库，而不是方便但不可审查地执行在线安装脚本。先清理可能冲突的发行版软件包：
+最后，看一下 `docker` 和 `docker compose` 的版本：
 
 ```bash
-for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do
-  sudo apt remove "$pkg"
-done
+docker --version # Docker version 28.3.2, build 578ccf6
+docker compose version # Docker Compose version v2.38.2
 ```
 
-添加 Docker 官方仓库：
+好了，大部分人使用 VPS 来部署服务都是使用 docker 来部署，比如 WordPress 等等，但是使用 docker 部署完，一般都是“IP+ 端口号”的方式来访问，这种方式不仅暴露了服务器的内部细节，显得不专业，还存在安全隐患。所以使用 Nginx 反向代理是必不可少的一步。通过将所有服务流量统一由 Nginx 进行转发，我们可以极大地提升部署的专业性、安全性与灵活性。我们只需要开一个端口，就能访问所有的 VPS 服务进程。
+
+这里我们用 NPM（[Nginx Proxy Manager](https://nginxproxymanager.com/)）来统一管理 Nginx 代理配置、Let's Encrypt 的 SSL 证书自动申请和续期。
+
+1. 首先我们创建安装目录
+
+   ```bash
+   # 创建并进入目录
+   mkdir ~/docker/npm && cd ~/docker/npm
+   ```
+
+2. 创建 `compose.yml` 文件
+
+   ```bash
+   # 创建compose文件
+   nano compose.yml
+   ```
+
+3. 复制内容下面内容并粘贴到文件中，这个 81 端口是 NPM 的默认后台端口，建议修改为你自己想要的。
+
+   ```yaml
+   services:
+     app:
+       image: 'jc21/nginx-proxy-manager:latest'
+       restart: unless-stopped
+       ports:
+         - '80:80'
+         - '81:81' # 这个就是你要暴露到公网上的端口
+         - '443:443'
+       volumes:
+         - ./data:/data
+         - ./letsencrypt:/etc/letsencrypt
+   ```
+
+4. 后台运行 docker compose 启动容器
+
+   ```bash
+   docker compose up -d
+   ```
+
+访问你的公网 IP 地址，会显示一个 NPM 的祝贺成功页面，代表安装 Nginx 成功了。访问公网 IP:81 进入网页，进行初始化。
+
+NPM 默认用户：
+
+```text
+Email:    admin@example.com
+Password: changeme
+```
+
+登录后进去修改账号密码。
+
+接下来你需要有一个域名，我的在域名托管在 Cloudflare 上，其它域名服务商应该也是类似的。在 Cloudflare 上对域名进行 DNS 解析，自定义一个三级域名比如 npm 用来访问 NPM 后台页面，npm.domain.com 指向你的服务器 IP 地址。然后我们让 NPM 反向代理自己，当访问 npm.domain.com 域名时，NPM 会转发流量到内部网络进行访问。
+
+我们创建 Let's Encrypt 的 SSL 证书，打开 NPM 后台页面，点击 SSL Certificates，add SSL Certificate → Let's Encrypt → 然后添加三级域名 `*.domain.com` 和二级域名 `domain.com` → Use a DNS Challenge 然后选择你的 DNS 提供商填入域名密钥保存就行。申请成功后添加代理的时候就能在 SSL 那里选择证书了。
+
+**默认配置下，Docker 的暴露的端口规则会与 UFW 的规则冲突**。它们通过直接修改底层的 `iptables` 规则来暴露端口，所以 docker 创建的端口不被 UFW 防火墙所限制。如果你会使用 iptables 就不需要使用 UFW，直接用 iptables 进行防火墙配置。通过修改 iptables 也能进行让 docker 所暴露的端口受 UFW 所限制，但是我们这里使用一种更简单的方法，就是让 NPM 通过访问不同 docker 容器的内部 IP 来进行代理，我们创建 docker 容器的时候不需要暴露到公网，只需要让 NPM 与其他容器在同一 docker 网络下就行。
+
+这里我们用 Portainer 来进行演示，将 Portainer 加入了 `npm_default` 网络，通过同样连接到这个网络的反向代理 NPM 来访问 Portainer 的 Web 界面。
+
+1. 首先我们创建安装目录
+
+   ```bash
+   mkdir ~/docker/portainer && cd ~/docker/portainer
+   ```
+
+2. 创建如下 `compose.yml` 文件，然后后台运行 compose。这里不需要添加端口映射关系，容器使用 NPM 创建的默认网络 `npm_default`。
+
+   ```yaml
+   services:
+     portainer:
+       image: portainer/portainer-ce:latest
+       container_name: portainer
+       restart: always
+       volumes:
+         - /var/run/docker.sock:/var/run/docker.sock
+         - ./portainer_data:/data
+       networks:
+         - npm_default
+   networks:
+     npm_default:
+       external: true
+   ```
+
+查看的容器的名称或 ID：
 
 ```bash
-sudo apt update
-sudo apt install ca-certificates curl -y
-sudo install -m 0755 -d /etc/apt/keyrings
-sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-sudo chmod a+r /etc/apt/keyrings/docker.asc
+docker ps
 ```
+
+然后，使用 `inspect` 命令。假设容器名叫 `portainer`：
 
 ```bash
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-  $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-sudo apt update
-sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
+docker inspect portainer
 ```
 
-验证安装：
+这会输出一大段 JSON 格式的信息。您需要滚动到最下面的 `Networks` 部分，在那里可以看到它在不同网络中的 IP 地址。
+
+可以使用 `--format` 标志来只提取 IP 地址，这样更清晰。
 
 ```bash
-sudo docker run --rm hello-world
-docker compose version
+docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' portainer
 ```
 
-如果希望普通用户无需 `sudo` 使用 Docker，可以加入 `docker` 组：
+这样就获取到了容器的内部 IP 了，于是我们可以在 NPM 中对 IP 进行代理，我们使用 portainer.domain.com 来访问页面，Scheme 使用 http，IP 输入刚刚获取的容器 IP 比如 `172.18.0.3`，端口输入 9000。SSL 选择刚刚的证书 `*.domain.com`，选择 Force SSL 进行强制 SSL 访问然后保存。这样就可以通过域名来访问 Portainer 后台了。
+
+通过下面命令来查看 `npm_default` 网络下的全部信息。
 
 ```bash
-sudo usermod -aG docker "$USER"
+docker network inspect npm_default
 ```
 
-重新登录后生效。注意：能访问 Docker daemon 的用户基本等同于拥有 `root` 权限，不要把不受信任的账号加入这个组。
-
-### Docker 与 UFW 的关系
-
-Docker 会自行创建防火墙规则。将容器端口发布到宿主机时，流量可能不会按直觉经过 UFW 的普通规则。因此，不能仅凭 `ufw status` 判断容器端口是否安全。
-
-我的做法是：只向公网发布真正需要的 80 和 443；数据库、Portainer 等服务加入内部 Docker 网络，由反向代理通过容器名访问。更复杂的访问控制应放在 `DOCKER-USER` 链或云服务商的安全组中，具体可参考 [Docker 官方防火墙文档](https://docs.docker.com/engine/network/packet-filtering-firewalls/)。
-
-## 9. 部署 Nginx Proxy Manager
-
-[Nginx Proxy Manager（NPM）](https://nginxproxymanager.com/guide/)提供了一个可视化反向代理界面，适合在一台 VPS 上管理多个小型服务。先创建目录和共享网络：
-
-```bash
-mkdir -p ~/docker/npm
-cd ~/docker/npm
-docker network create proxy
-```
-
-创建 `compose.yml`：
-
-```yaml
-services:
-  npm:
-    image: jc21/nginx-proxy-manager:2.15.1
-    container_name: npm
-    restart: unless-stopped
-    ports:
-      - '80:80'
-      - '127.0.0.1:8181:81'
-      - '443:443'
-    environment:
-      DISABLE_IPV6: 'true'
-    volumes:
-      - ./data:/data
-      - ./letsencrypt:/etc/letsencrypt
-    networks:
-      - proxy
-
-networks:
-  proxy:
-    external: true
-```
-
-启动服务：
-
-```bash
-docker compose up -d
-docker compose ps
-docker compose logs --tail=100
-```
-
-管理端口 81 没有直接暴露到公网，而是映射到了服务器本机的 `8181`。在自己的电脑上建立 SSH 隧道：
-
-```bash
-ssh -L 8181:127.0.0.1:8181 kano@server_ip
-```
-
-然后访问 `http://127.0.0.1:8181`。按照 NPM 当前界面的提示完成首次登录，并立即修改默认邮箱和密码。
-
-### 绑定域名和证书
-
-在 DNS 服务商处添加 A 记录，把域名指向服务器 IPv4；只有服务器确实配置了可用的 IPv6 时才添加 AAAA 记录。DNS 生效后，在 NPM 中创建 Proxy Host：
-
-- Domain Names：准备访问的域名，例如 `app.example.com`
-- Scheme：上游容器实际使用的协议
-- Forward Hostname：共享网络里的容器服务名
-- Forward Port：容器内部监听的端口
-
-再申请 Let's Encrypt 证书并开启 Force SSL。通配符证书通常需要 DNS Challenge，以及 DNS 服务商提供的最小权限 API Token；不要使用拥有完整账户权限的主密钥。
-
-## 10. 部署 Portainer
-
-Portainer 可以管理 Docker 容器，但挂载 `/var/run/docker.sock` 意味着它拥有接近宿主机 `root` 的能力。必须使用强密码、及时更新，并避免直接公开管理端口。
-
-```bash
-mkdir -p ~/docker/portainer
-cd ~/docker/portainer
-```
-
-创建 `compose.yml`：
-
-```yaml
-services:
-  portainer:
-    image: portainer/portainer-ce:lts
-    container_name: portainer
-    restart: unless-stopped
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./portainer_data:/data
-    networks:
-      - proxy
-
-networks:
-  proxy:
-    external: true
-```
-
-启动：
-
-```bash
-docker compose up -d
-docker compose ps
-```
-
-因为 NPM 和 Portainer 都加入了 `proxy` 网络，所以 NPM 可以直接使用稳定的容器名访问它：
-
-- Forward Hostname：`portainer`
-- Forward Port：`9000`
-- Scheme：`http`
-
-不需要查询并写死 `172.x.x.x` 形式的容器 IP；容器重建后 IP 可能变化，而 Docker 内部 DNS 会继续解析服务名。
-
-同样的方式也适用于其他 Web 服务：让它们加入 `proxy` 网络，不向宿主机发布后台端口，再通过 NPM 提供 HTTPS 入口。
-
-## 11. 收尾检查
-
-完成后，我会逐项确认：
-
-- 普通用户可以通过 SSH 密钥登录
-- `root`、密码和键盘交互登录已被拒绝
-- UFW 只开放当前需要的端口
-- Fail2ban 正常监控 SSH
-- `apt` 没有遗留的重要安全更新
-- Docker 容器没有意外发布数据库或管理端口
-- NPM 和 Portainer 的默认凭据已修改
-- DNS、HTTPS 和证书续期工作正常
-- 服务配置和持久化数据有异地备份
-
-可以用下面几条命令做快速检查：
-
-```bash
-sudo ss -tulpn
-sudo ufw status verbose
-sudo fail2ban-client status sshd
-docker ps --format 'table {{.Names}}\t{{.Ports}}\t{{.Status}}'
-```
-
-最后，不要忘记在云服务商控制台做一次可恢复的快照，并实际验证备份能否还原。安全初始化不是“一次配置、永久有效”，而是后续更新、最小暴露和可恢复性维护的起点。
+这样其他的 docker 服务都可以按照这个方法通过 NPM 来反向代理进行访问了。
