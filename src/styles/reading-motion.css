@@ -35,7 +35,30 @@
 		content: none;
 	}
 	.mobile-toc summary {
+		position: relative;
 		height: 3rem;
+	}
+	.mobile-toc summary::before {
+		position: absolute;
+		bottom: -1px;
+		left: 0;
+		width: 100%;
+		height: 2px;
+		transform: scaleX(var(--toc-progress, 0));
+		transform-origin: left;
+		background: var(--text);
+		pointer-events: none;
+		content: '';
+	}
+	.toc-progress-label {
+		flex-shrink: 0;
+		min-width: 4ch;
+		margin-left: auto;
+		color: var(--muted);
+		font-family: var(--font-mono);
+		font-size: 0.7rem;
+		font-variant-numeric: tabular-nums;
+		text-align: right;
 	}
 	.toc-toggle-icon {
 		position: relative;
@@ -43,6 +66,9 @@
 		height: 1rem;
 		flex: 0 0 1rem;
 		margin-left: auto;
+	}
+	.toc-progress-label:not([hidden]) + .toc-toggle-icon {
+		margin-left: 0;
 	}
 	.toc-toggle-icon::before,
 	.toc-toggle-icon::after {

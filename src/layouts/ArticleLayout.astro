@@ -93,6 +93,7 @@ const toc = headings.filter((heading) => heading.depth === 2 || heading.depth ==
 							<span class="toc-current" data-toc-current>
 								{toc[0].text}
 							</span>
+							<span class="toc-progress-label" data-reading-progress hidden />
 							<span class="toc-toggle-icon" aria-hidden="true" />
 						</summary>
 						<TocLinks headings={toc} />
@@ -173,6 +174,7 @@ const toc = headings.filter((heading) => heading.depth === 2 || heading.depth ==
 	const mobileToc = document.querySelector<HTMLDetailsElement>('.mobile-toc');
 	const mobileLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>('.mobile-toc a'));
 	const currentSection = document.querySelector<HTMLElement>('[data-toc-current]');
+	const progressLabel = document.querySelector<HTMLElement>('[data-reading-progress]');
 	mobileLinks.forEach((link) => {
 		link.addEventListener('click', () => {
 			if (mobileToc) mobileToc.open = false;
@@ -228,6 +230,15 @@ const toc = headings.filter((heading) => heading.depth === 2 || heading.depth ==
 				1,
 			);
 			toc.style.setProperty('--toc-progress', String(progress));
+			mobileToc?.style.setProperty('--toc-progress', String(progress));
+			if (progressLabel) {
+				const percentage = `${Math.round(progress * 100)}%`;
+				if (progressLabel.textContent !== percentage) {
+					progressLabel.textContent = percentage;
+					progressLabel.setAttribute('aria-label', `阅读进度 ${percentage}`);
+				}
+				progressLabel.hidden = false;
+			}
 		};
 
 		const requestProgressUpdate = () => {
@@ -237,6 +248,8 @@ const toc = headings.filter((heading) => heading.depth === 2 || heading.depth ==
 
 		window.addEventListener('scroll', requestProgressUpdate, { passive: true });
 		window.addEventListener('resize', requestProgressUpdate);
+		window.addEventListener('pageshow', requestProgressUpdate);
+		if ('ResizeObserver' in window) new ResizeObserver(requestProgressUpdate).observe(prose);
 		updateReadingProgress();
 	}
 </script>

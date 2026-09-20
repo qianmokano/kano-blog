@@ -599,6 +599,41 @@ main {
 	list-style: none;
 }
 
+.content-list.has-list-feedback {
+	position: relative;
+	isolation: isolate;
+}
+
+.content-list.has-list-feedback::before {
+	position: absolute;
+	z-index: -1;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: var(--feedback-height, 0px);
+	transform: translateY(var(--feedback-y, 0px));
+	background: color-mix(in srgb, var(--text) 3%, var(--bg));
+	opacity: 0;
+	pointer-events: none;
+	content: '';
+	transition:
+		var(--theme-transition),
+		opacity 120ms ease;
+}
+
+.content-list[data-feedback-visible]::before {
+	opacity: 1;
+	transition:
+		var(--theme-transition),
+		opacity 120ms ease,
+		transform 220ms var(--ease),
+		height 220ms var(--ease);
+}
+
+.content-list.has-list-feedback > .content-card {
+	background-color: transparent;
+}
+
 .content-card {
 	position: relative;
 	display: grid;
