@@ -148,9 +148,12 @@ test('mobile TOC is collapsed and stays available while reading', async ({ page 
 			.evaluate((node) => node.getBoundingClientRect().top),
 	).toBeLessThan(page.viewportSize()!.height);
 	await toc.locator('summary').click();
-	await toc.getByRole('link', { name: '11. 收尾检查', exact: true }).click();
+	const destination = await toc.locator('a').last().getAttribute('href');
+	await toc.locator('a').last().click();
 	await expect(toc).not.toHaveAttribute('open');
-	await expect(page.getByRole('heading', { name: '11. 收尾检查', exact: true })).toBeInViewport();
+	await expect(
+		page.locator(`[id="${decodeURIComponent(destination!.slice(1))}"]`),
+	).toBeInViewport();
 	await expect(toc.locator('summary')).toBeInViewport();
 	await toc.locator('summary').click();
 	await expect(toc.getByRole('navigation')).toBeVisible();
@@ -165,7 +168,7 @@ test('desktop TOC never scrolls horizontally with active or long headings', asyn
 	test.skip(testInfo.project.name !== 'chromium', 'Desktop sidebar layout.');
 	await page.goto('/blog/vps-first-steps-security/');
 	const toc = page.locator('.article-toc');
-	for (const width of [800, 1024, 1280, 1600]) {
+	for (const width of [1100, 1280, 1600]) {
 		await page.setViewportSize({ width, height: 720 });
 		await expect(toc.locator('[aria-current="location"]')).toHaveCount(1);
 		await expect(toc.locator('[aria-current="location"]')).toHaveCSS(
@@ -179,8 +182,8 @@ test('desktop TOC never scrolls horizontally with active or long headings', asyn
 			),
 		).toBe(0);
 	}
-	await page.setViewportSize({ width: 800, height: 720 });
-	await toc.getByRole('link', { name: '7. 设置时区和自动安全更新', exact: true }).click();
+	await page.setViewportSize({ width: 1100, height: 720 });
+	await toc.getByRole('link', { name: '设置系统时间', exact: true }).click();
 	await expect.poll(() => toc.evaluate((node) => node.scrollWidth - node.clientWidth)).toBe(0);
 	await toc
 		.locator('a')

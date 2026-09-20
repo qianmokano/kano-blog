@@ -23,7 +23,7 @@
 	}
 }
 
-@media (max-width: 48rem) {
+@media (max-width: 64rem) {
 	.mobile-toc {
 		--toc-duration: 120ms;
 	}

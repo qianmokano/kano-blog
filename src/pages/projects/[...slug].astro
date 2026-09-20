@@ -45,7 +45,7 @@ const breadcrumbSchema = createBreadcrumbSchema([
 	structuredData={[projectSchema, breadcrumbSchema]}
 >
 	<article
-		class="project-page page-section shell"
+		class="project-page page-section content-shell"
 		data-pagefind-body
 		data-pagefind-meta="type:项目"
 	>
@@ -84,7 +84,7 @@ const breadcrumbSchema = createBreadcrumbSchema([
 						src={project.data.cover}
 						alt={project.data.coverAlt ?? `${project.data.title}的封面`}
 						widths={[480, 768, 1200]}
-						sizes="(max-width: 48rem) calc(100vw - 1.5rem), 48rem"
+						sizes="(max-width: 30rem) calc(100vw - 1.5rem), (max-width: 48rem) calc(100vw - 2.5rem), 44rem"
 					/>
 				</figure>
 			)

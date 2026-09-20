@@ -1,5 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content';
+import { Image } from 'astro:assets';
 
 interface Props {
 	project: CollectionEntry<'projects'>;
@@ -9,8 +10,26 @@ interface Props {
 const { project, headingLevel: Heading = 'h2' } = Astro.props;
 ---
 
-<li class="content-card project-card" data-pagefind-ignore>
-	<div>
+<li class="project-card" data-pagefind-ignore>
+	<div class:list={['project-preview', { 'project-preview-placeholder': !project.data.cover }]}>
+		{
+			project.data.cover ? (
+				<Image
+					src={project.data.cover}
+					alt={project.data.coverAlt ?? `${project.data.title}的界面预览`}
+					widths={[480, 768, 1200]}
+					sizes="(max-width: 30rem) calc(100vw - 1.5rem), (max-width: 48rem) calc(100vw - 2.5rem), 28rem"
+					loading="lazy"
+				/>
+			) : (
+				<>
+					<p class="eyebrow">Project / {project.data.period}</p>
+					<p class="project-preview-title">{project.data.title}</p>
+				</>
+			)
+		}
+	</div>
+	<div class="project-card-copy">
 		<div class="content-meta">
 			<span>{project.data.period}</span>
 			<span class="status-pill">{project.data.status}</span>
@@ -30,6 +49,21 @@ const { project, headingLevel: Heading = 'h2' } = Astro.props;
 				</ul>
 			)
 		}
+		<div class="project-card-actions">
+			{
+				project.data.demoUrl && (
+					<a class="button primary" href={project.data.demoUrl} rel="noreferrer">
+						访问项目 ↗
+					</a>
+				)
+			}
+			{
+				project.data.repositoryUrl && (
+					<a class="button" href={project.data.repositoryUrl} rel="noreferrer">
+						查看源码 ↗
+					</a>
+				)
+			}
+		</div>
 	</div>
-	<span class="content-arrow" aria-hidden="true">↗</span>
 </li>

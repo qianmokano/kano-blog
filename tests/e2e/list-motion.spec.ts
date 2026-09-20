@@ -120,6 +120,12 @@ test('returning to an article list preserves position without a transition', asy
 	await page.goto('/blog/');
 	const title = page.locator('.content-card h2 a').last();
 	await title.scrollIntoViewIfNeeded();
+	// Save the reading position after the entrance, not its temporary translation.
+	await expect(page.locator('.content-card').last()).toHaveCSS(
+		'transform',
+		'matrix(1, 0, 0, 1, 0, 0)',
+	);
+	await title.scrollIntoViewIfNeeded();
 	const before = await page.evaluate(() => scrollY);
 	await title.click();
 	await expect(page.locator('.article-header')).toBeVisible();

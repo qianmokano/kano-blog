@@ -214,6 +214,8 @@ for (const dialog of [false, true]) {
 		await input.fill('Astro');
 		const links = root.locator('.search-result');
 		await expect(links).toHaveCount(2);
+		// Ranking can change with indexed content; Enter should follow the focused link.
+		const destination = new URL((await links.last().getAttribute('href'))!, page.url()).href;
 		await input.press('ArrowDown');
 		await expect(links.first()).toBeFocused();
 		await page.keyboard.press('Tab');
@@ -240,11 +242,11 @@ for (const dialog of [false, true]) {
 			await input.press('ArrowUp');
 			await recordTitleOnLeave(page);
 			await page.keyboard.press('Enter');
-			await expect(page).toHaveURL(/\/projects\/kano-blog\//);
+			await expect(page).toHaveURL(destination);
 			expect(await page.evaluate(() => sessionStorage.getItem('title-count'))).toBe('1');
 		} else {
 			await page.keyboard.press('Enter');
-			await expect(page).toHaveURL(/\/projects\/kano-blog\//);
+			await expect(page).toHaveURL(destination);
 		}
 	});
 }

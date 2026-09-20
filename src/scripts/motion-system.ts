@@ -3,7 +3,15 @@ export {};
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 const setupReveals = () => {
-	if (reducedMotion.matches || !('IntersectionObserver' in window)) return;
+	const navigation = performance.getEntriesByType('navigation')[0] as
+		PerformanceNavigationTiming | undefined;
+	// A fresh history document must not move the link whose focus/scroll is being restored.
+	if (
+		reducedMotion.matches ||
+		navigation?.type === 'back_forward' ||
+		!('IntersectionObserver' in window)
+	)
+		return;
 
 	const groups = [
 		...document.querySelectorAll<HTMLElement>('.home-sections > section, .page-section'),
@@ -11,7 +19,7 @@ const setupReveals = () => {
 	const targets = groups.flatMap((group) => {
 		const groupTargets = [
 			...group.querySelectorAll<HTMLElement>(
-				':scope > .section-heading, :scope > .page-header, :scope > .content-list > .content-card, :scope > .friend-grid > li, :scope > .archive-groups > section',
+				':scope > .section-heading, :scope > .page-header, :scope > .content-list > .content-card, :scope > .project-list > .project-card, :scope > .friend-grid > li, :scope > .archive-groups > section',
 			),
 		];
 		groupTargets.forEach((target, index) => {

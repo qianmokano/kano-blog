@@ -50,7 +50,11 @@ const toc = headings.filter((heading) => heading.depth === 2 || heading.depth ==
 	image={socialImage}
 	structuredData={[articleSchema, breadcrumbSchema]}
 >
-	<article class="article-page" data-pagefind-body data-pagefind-meta="type:文章">
+	<article
+		class:list={['article-page', { 'has-toc': toc.length > 0 }]}
+		data-pagefind-body
+		data-pagefind-meta="type:文章"
+	>
 		<header class="article-header reading-shell">
 			<div class="content-meta">
 				<time datetime={post.data.publishedAt.toISOString()}
@@ -78,13 +82,13 @@ const toc = headings.filter((heading) => heading.depth === 2 || heading.depth ==
 						src={post.data.cover}
 						alt={post.data.coverAlt ?? `${post.data.title}的封面`}
 						widths={[480, 768, 1200]}
-						sizes="(max-width: 48rem) calc(100vw - 1.5rem), 48rem"
+						sizes="(max-width: 30rem) calc(100vw - 1.5rem), (max-width: 48rem) calc(100vw - 2.5rem), 44rem"
 					/>
 				</figure>
 			)
 		}
 
-		<div class:list={['article-grid shell', { 'without-toc': toc.length === 0 }]}>
+		<div class:list={['article-grid', { 'without-toc': toc.length === 0 }]}>
 			{
 				toc.length > 0 && (
 					<details class="mobile-toc" data-pagefind-ignore>

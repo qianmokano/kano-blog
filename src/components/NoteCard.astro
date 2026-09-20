@@ -4,23 +4,23 @@ import { formatDate } from '@/lib/content';
 
 interface Props {
 	note: CollectionEntry<'notes'>;
+	headingLevel?: 'h2' | 'h3';
 }
 
-const { note } = Astro.props;
+const { note, headingLevel: Heading = 'h2' } = Astro.props;
 ---
 
-<li class="content-card" data-pagefind-ignore>
+<li class="content-card note-card" data-pagefind-ignore>
+	<div class="content-meta note-date">
+		<time datetime={note.data.publishedAt.toISOString()}>{formatDate(note.data.publishedAt)}</time>
+		{note.data.draft && <span>草稿</span>}
+	</div>
 	<div>
-		<div class="content-meta">
-			<time datetime={note.data.publishedAt.toISOString()}>{formatDate(note.data.publishedAt)}</time
-			>
-			{note.data.draft && <span>草稿</span>}
-		</div>
-		<h2>
+		<Heading>
 			<a href={`/notes/${note.id}/`} data-transition-title-link
 				><span data-transition-title-source>{note.data.title}</span></a
 			>
-		</h2>
+		</Heading>
 		{note.data.tags.length > 0 && <p>{note.data.tags.join(' · ')}</p>}
 	</div>
 	<span class="content-arrow" aria-hidden="true">↗</span>
