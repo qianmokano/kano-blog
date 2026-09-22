@@ -100,11 +100,11 @@ test('projects expose independent detail, demo and source links in a responsive 
 		'href',
 		'/projects/kano-blog/',
 	);
-	await expect(card.getByRole('link', { name: '访问项目 ↗' })).toHaveAttribute(
+	await expect(card.getByRole('link', { name: '访问项目', exact: true })).toHaveAttribute(
 		'href',
 		'https://blog.thekanojyo.com/',
 	);
-	await expect(card.getByRole('link', { name: '查看源码 ↗' })).toHaveAttribute(
+	await expect(card.getByRole('link', { name: '查看源码', exact: true })).toHaveAttribute(
 		'href',
 		'https://github.com/qianmokano/kano-blog',
 	);

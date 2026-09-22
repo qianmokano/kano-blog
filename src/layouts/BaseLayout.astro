@@ -2,6 +2,7 @@
 import '@fontsource-variable/inter';
 import '@fontsource-variable/jetbrains-mono';
 import '@/styles/global.css';
+import '@/styles/ambient-motion.css';
 import BaseHead from '@/components/BaseHead.astro';
 import Footer from '@/components/Footer.astro';
 import Header from '@/components/Header.astro';
@@ -62,6 +63,7 @@ const websiteSchema = {
 		<script is:inline src="/scripts/search.js"></script>
 		<script>
 			import '@/scripts/motion-system';
+			import '@/scripts/ambient-motion';
 			import '@/scripts/list-feedback';
 			import '@/scripts/theme-motion';
 		</script>
