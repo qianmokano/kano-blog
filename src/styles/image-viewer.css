@@ -23,6 +23,31 @@
 	background: rgb(0 0 0 / 55%);
 	-webkit-backdrop-filter: blur(3px);
 	backdrop-filter: blur(3px);
+	opacity: 0;
+	transition: opacity 260ms ease;
+}
+
+.image-viewer[open]::backdrop {
+	opacity: 1;
+}
+
+.image-viewer.is-closing::backdrop {
+	opacity: 0;
+}
+
+@starting-style {
+	.image-viewer[open]::backdrop {
+		opacity: 0;
+	}
+}
+
+.image-viewer__close,
+.image-viewer__caption {
+	transition: opacity 260ms ease;
+}
+
+.image-viewer.is-closing :is(.image-viewer__close, .image-viewer__caption) {
+	opacity: 0;
 }
 
 .image-viewer__content {

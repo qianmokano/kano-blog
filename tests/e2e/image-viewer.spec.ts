@@ -83,3 +83,22 @@ test('article image viewer honors reduced motion', async ({ page }) => {
 	await expect(page.getByRole('dialog', { name: '图片预览' })).toBeVisible();
 	expect(await viewerImage.evaluate((image) => image.getAnimations().length)).toBe(0);
 });
+
+test('closing during expansion starts at the current image position', async ({ page }) => {
+	await injectViewerFixture(page);
+	await page.getByRole('button', { name: '查看大图：蓝色示例图' }).click();
+	const preview = page.locator('.image-viewer__image');
+	const position = await preview.evaluate((image) => {
+		const animation = image.getAnimations()[0];
+		animation.pause();
+		animation.currentTime = 70;
+		return getComputedStyle(image).transform;
+	});
+	await page.keyboard.press('Escape');
+	const firstFrame = await preview.evaluate((image) => {
+		const animation = image.getAnimations()[0];
+		return (animation.effect as KeyframeEffect).getKeyframes()[0].transform;
+	});
+	expect(firstFrame).toBe(position);
+	await expect(page.getByRole('dialog', { name: '图片预览' })).toBeHidden();
+});

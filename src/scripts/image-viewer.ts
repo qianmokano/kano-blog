@@ -1,5 +1,5 @@
 const MIN_ZOOM_WIDTH = 240;
-const ANIMATION_DURATION = 180;
+const ANIMATION_DURATION = 260;
 
 type ViewerState = {
 	source: HTMLImageElement | null;
@@ -68,9 +68,11 @@ const createViewer = () => {
 	};
 
 	const closeViewer = async () => {
-		if (!dialog.open) return;
+		if (!dialog.open || dialog.classList.contains('is-closing')) return;
 		const revision = ++state.revision;
+		const currentTransform = viewerImage ? getComputedStyle(viewerImage).transform : 'none';
 		cancelAnimation();
+		dialog.classList.add('is-closing');
 		const source = state.source;
 		const sourceRect = source?.getBoundingClientRect();
 		const isSourceVisible = Boolean(
@@ -83,12 +85,14 @@ const createViewer = () => {
 			sourceRect.left < window.innerWidth,
 		);
 
-		if (!reducedMotion.matches && sourceRect && isSourceVisible && viewerImage) {
+		if (!reducedMotion.matches && viewerImage) {
 			const targetRect = viewerImage.getBoundingClientRect();
 			state.animation = viewerImage.animate(
 				[
-					{ transform: 'none', transformOrigin: 'top left' },
-					sourceTransform(sourceRect, targetRect),
+					{ transform: currentTransform, transformOrigin: 'top left', opacity: 1 },
+					sourceRect && isSourceVisible && targetRect.width > 0 && targetRect.height > 0
+						? sourceTransform(sourceRect, targetRect)
+						: { transform: currentTransform, opacity: 0 },
 				],
 				{ duration: ANIMATION_DURATION, easing: 'ease-in', fill: 'forwards' },
 			);
@@ -117,9 +121,10 @@ const createViewer = () => {
 	};
 
 	const openViewer = async (source: HTMLImageElement) => {
-		if (!viewerImage || !caption || !closeButton) return;
+		if (!viewerImage || !caption || !closeButton || dialog.open) return;
 		const revision = ++state.revision;
 		cancelAnimation();
+		dialog.classList.remove('is-closing');
 		state.source = source;
 		state.sourceRect = source.getBoundingClientRect();
 		state.scrollX = window.scrollX;
@@ -166,7 +171,16 @@ const createViewer = () => {
 	dialog.addEventListener('click', (event) => {
 		if (event.target === dialog || event.target === content) void closeViewer();
 	});
-	dialog.addEventListener('close', restorePagePosition);
+	dialog.addEventListener('close', () => {
+		state.revision += 1;
+		cancelAnimation();
+		restorePagePosition();
+	});
+	reducedMotion.addEventListener('change', () => {
+		if (!reducedMotion.matches) return;
+		if (dialog.classList.contains('is-closing')) finishClose();
+		else cancelAnimation();
+	});
 
 	return openViewer;
 };

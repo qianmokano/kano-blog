@@ -53,14 +53,20 @@ const { project, headingLevel: Heading = 'h2' } = Astro.props;
 			{
 				project.data.demoUrl && (
 					<a class="button primary" href={project.data.demoUrl} rel="noreferrer">
-						访问项目 ↗
+						访问项目{' '}
+						<span class="project-action-arrow" aria-hidden="true">
+							↗
+						</span>
 					</a>
 				)
 			}
 			{
 				project.data.repositoryUrl && (
 					<a class="button" href={project.data.repositoryUrl} rel="noreferrer">
-						查看源码 ↗
+						查看源码{' '}
+						<span class="project-action-arrow" aria-hidden="true">
+							↗
+						</span>
 					</a>
 				)
 			}
