@@ -62,6 +62,9 @@ const clearSharedTitle = () => {
 	document
 		.querySelector<HTMLElement>('[data-transition-title-target]')
 		?.style.removeProperty('view-transition-name');
+	document
+		.querySelectorAll<HTMLElement>('.project-preview img')
+		.forEach((element) => element.style.removeProperty('view-transition-name'));
 };
 
 document.addEventListener('click', (event) => {
@@ -86,6 +89,12 @@ document.addEventListener('click', (event) => {
 	document
 		.querySelector<HTMLElement>('[data-transition-title-target]')
 		?.style.setProperty('view-transition-name', 'none');
+
+	// The clicked card's cover morphs into the article's cover figure.
+	const cardCover = anchor
+		.closest('.project-card')
+		?.querySelector<HTMLElement>('.project-preview img');
+	cardCover?.style.setProperty('view-transition-name', 'content-cover');
 
 	if (!anchor.hasAttribute('data-transition-title-link')) return;
 	const source = anchor.querySelector<HTMLElement>('[data-transition-title-source]');

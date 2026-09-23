@@ -1,0 +1,62 @@
+/**
+ * 墨场 Ink Field — 与站点语言一致的动效层。
+ * 只用字重、发丝线与位置说话;不引入任何彩色或装饰性元素。
+ */
+
+/* ============== Hero 可变字重磁场 ============== */
+/* 每个字形是独立的弹簧:指针接近时字重上升并轻微上浮。
+   变换与字重由 JS 以 rAF 写入,CSS 只负责 will-change 与行间稳定。 */
+.hero-title .field-char {
+	display: inline-block;
+	will-change: transform, font-variation-settings;
+}
+
+/* ============== Wordmark 字重扫掠 ============== */
+.wordmark-text .field-char {
+	display: inline-block;
+	font-variation-settings: 'wght' 650;
+	transition: font-variation-settings 260ms var(--ease);
+	transition-delay: calc(var(--char-index, 0) * 35ms);
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.wordmark:hover .wordmark-text .field-char,
+	.wordmark:focus-visible .wordmark-text .field-char {
+		font-variation-settings: 'wght' 800;
+	}
+}
+
+/* ============== 磁吸按钮 ============== */
+[data-magnetic] {
+	will-change: transform;
+}
+
+/* ============== 分隔发丝线自绘 ============== */
+/* reveal 时一条深色发丝线沿已有分隔线从左向右画出。 */
+.section-heading {
+	position: relative;
+}
+
+.motion-ready .section-heading::after {
+	position: absolute;
+	bottom: -1px;
+	left: 0;
+	width: 100%;
+	height: 1px;
+	transform: scaleX(0);
+	transform-origin: left;
+	background: var(--text);
+	content: '';
+	pointer-events: none;
+	transition: transform 640ms var(--ease) calc(var(--reveal-delay, 0ms) + 120ms);
+}
+
+.motion-ready .section-heading.is-revealed::after {
+	transform: scaleX(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.motion-ready .section-heading::after {
+		transition: none;
+	}
+}

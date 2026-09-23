@@ -83,6 +83,7 @@ const toc = headings.filter((heading) => heading.depth === 2 || heading.depth ==
 						alt={post.data.coverAlt ?? `${post.data.title}的封面`}
 						widths={[480, 768, 1200]}
 						sizes="(max-width: 30rem) calc(100vw - 1.5rem), (max-width: 48rem) calc(100vw - 2.5rem), 44rem"
+						data-transition-cover-target
 					/>
 				</figure>
 			)

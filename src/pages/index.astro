@@ -25,7 +25,7 @@ const heroTitle = 'Hi!👋\n这里是kano！';
 			</h1>
 			<p>{siteConfig.tagline} 这里收录我的技术文章、项目实践与正在形成的想法。</p>
 			<div class="hero-actions">
-				<a class="button primary" href="/blog/">开始阅读</a>
+				<a class="button primary" href="/blog/" data-magnetic>开始阅读</a>
 				<a class="button" href="/about/">关于我</a>
 			</div>
 		</div>
@@ -95,6 +95,12 @@ const heroTitle = 'Hi!👋\n这里是kano！';
 	if (typewriter) {
 		const text = typewriter.dataset.text ?? typewriter.textContent ?? '';
 		const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+		// Tell the kinetic-type field the title is final and safe to split.
+		const announceHeroReady = () => {
+			if (document.documentElement.dataset.heroTyped === 'true') return;
+			document.documentElement.dataset.heroTyped = 'true';
+			document.dispatchEvent(new CustomEvent('kano:hero-ready'));
+		};
 		let hasVisited = false;
 		try {
 			hasVisited = sessionStorage.getItem('kano-home-visited') === 'true';
@@ -117,6 +123,7 @@ const heroTitle = 'Hi!👋\n这里是kano！';
 				typewriter.textContent = text;
 				typewriterCursor?.classList.remove('is-typing');
 				hero?.classList.remove('is-entering');
+				announceHeroReady();
 			};
 			window.addEventListener('pagehide', finishGreeting, { once: true });
 			motionPreference.addEventListener('change', (event) => {
@@ -133,10 +140,13 @@ const heroTitle = 'Hi!👋\n这里是kano！';
 				} else {
 					typewriterCursor?.classList.add('is-complete');
 					hero?.classList.remove('is-entering');
+					announceHeroReady();
 				}
 			};
 
 			timer = window.setTimeout(typeNextCharacter, 120);
+		} else {
+			announceHeroReady();
 		}
 	}
 </script>

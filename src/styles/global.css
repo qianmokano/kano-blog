@@ -146,6 +146,25 @@ html {
 	view-transition-name: content-title;
 }
 
+::view-transition-group(content-cover) {
+	z-index: 2;
+	animation-duration: 420ms;
+	animation-timing-function: var(--ease);
+}
+
+::view-transition-old(content-cover),
+::view-transition-new(content-cover) {
+	height: 100%;
+	animation-duration: 420ms;
+	animation-timing-function: var(--ease);
+	object-fit: cover;
+	mix-blend-mode: normal;
+}
+
+[data-transition-cover-target] {
+	view-transition-name: content-cover;
+}
+
 html.theme-transition {
 	view-transition-name: root;
 	transition: none !important;
@@ -1980,7 +1999,8 @@ main {
 
 @media (prefers-reduced-motion: reduce) {
 	[data-transition-title-target],
-	[data-transition-title-source] {
+	[data-transition-title-source],
+	[data-transition-cover-target] {
 		view-transition-name: none !important;
 	}
 

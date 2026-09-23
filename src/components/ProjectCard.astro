@@ -52,7 +52,7 @@ const { project, headingLevel: Heading = 'h2' } = Astro.props;
 		<div class="project-card-actions">
 			{
 				project.data.demoUrl && (
-					<a class="button primary" href={project.data.demoUrl} rel="noreferrer">
+					<a class="button primary" href={project.data.demoUrl} rel="noreferrer" data-magnetic>
 						访问项目{' '}
 						<span class="project-action-arrow" aria-hidden="true">
 							↗
@@ -62,7 +62,7 @@ const { project, headingLevel: Heading = 'h2' } = Astro.props;
 			}
 			{
 				project.data.repositoryUrl && (
-					<a class="button" href={project.data.repositoryUrl} rel="noreferrer">
+					<a class="button" href={project.data.repositoryUrl} rel="noreferrer" data-magnetic>
 						查看源码{' '}
 						<span class="project-action-arrow" aria-hidden="true">
 							↗
