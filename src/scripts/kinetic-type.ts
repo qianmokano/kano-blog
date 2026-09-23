@@ -177,5 +177,59 @@ const setupHeroField = () => {
 	}
 };
 
+/* ============== 内页标题字距沉淀 ============== */
+/* 内页大标题的字形从宽字距、轻字重沉淀回站点标志性的紧排与
+   终态字重:字距轴对 CJK 与 Latin 同样有效,字重轴在可变字体
+   覆盖的字符上自然增强。完成后还原原始文本节点,选中与朗读
+   都不受拆分影响。 */
+const SETTLE_TRACKING = '0.14em';
+const SETTLE_FINAL_TRACKING = '-0.035em';
+const SETTLE_LIGHT = 300;
+
+const setupTitleSettle = () => {
+	const title = document.querySelector<HTMLElement>('.page-header h1, .prose-header h1');
+	if (!title || title.childElementCount > 0 || reducedMotion.matches) return;
+
+	const navigation = performance.getEntriesByType('navigation')[0] as
+		PerformanceNavigationTiming | undefined;
+	// 历史往返时保持安静,与 reveal 系统一致。
+	if (navigation?.type === 'back_forward') return;
+
+	const text = title.textContent ?? '';
+	if (!text.trim()) return;
+
+	const baseWeight = Number.parseFloat(getComputedStyle(title).fontWeight) || 590;
+	title.setAttribute('aria-label', text.trim());
+	const chars = splitIntoChars(title);
+	if (chars.length === 0) return;
+	chars.forEach((char) => char.setAttribute('aria-hidden', 'true'));
+	title.classList.add('settle-title');
+
+	for (const char of chars) {
+		char.style.fontVariationSettings = `'wght' ${SETTLE_LIGHT}`;
+		char.style.letterSpacing = SETTLE_TRACKING;
+	}
+
+	const settle = () => {
+		window.requestAnimationFrame(() => {
+			for (const char of chars) {
+				char.style.fontVariationSettings = `'wght' ${baseWeight}`;
+				char.style.letterSpacing = SETTLE_FINAL_TRACKING;
+			}
+		});
+	};
+	if (document.fonts?.ready) void document.fonts.ready.then(settle);
+	else settle();
+
+	// 沉淀完成后还原原始文本节点,消除拆分带来的字偶距损失。
+	const duration = chars.length * 28 + 760;
+	window.setTimeout(() => {
+		title.classList.remove('settle-title');
+		title.textContent = text;
+		title.removeAttribute('aria-label');
+	}, duration);
+};
+
 setupWordmark();
 setupHeroField();
+setupTitleSettle();

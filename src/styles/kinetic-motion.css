@@ -55,8 +55,145 @@
 	transform: scaleX(1);
 }
 
+/* ============== 内页标题字距沉淀 ============== */
+.settle-title .field-char {
+	display: inline-block;
+	transition:
+		font-variation-settings 680ms var(--ease),
+		letter-spacing 680ms var(--ease);
+	transition-delay: calc(var(--char-index, 0) * 28ms), calc(var(--char-index, 0) * 28ms);
+}
+
+/* ============== 归档时间轴脊柱 ============== */
+@media (min-width: 48rem) {
+	.archive-groups section {
+		position: relative;
+	}
+
+	/* 脊柱线:落在年份列与条目列之间的缝隙中央 */
+	.archive-groups section::before {
+		position: absolute;
+		top: 0.2rem;
+		bottom: 0;
+		left: calc(8rem + 1rem);
+		width: 1px;
+		background: var(--line-strong);
+		content: '';
+	}
+
+	/* 年份钉:实心方块,把年份钉在脊柱上 */
+	.archive-groups section::after {
+		position: absolute;
+		top: 0.42rem;
+		left: calc(8rem + 1rem);
+		width: 0.4rem;
+		height: 0.4rem;
+		transform: translateX(-50%);
+		background: var(--text);
+		content: '';
+	}
+
+	.motion-ready .archive-groups section::before {
+		transform: scaleY(0);
+		transform-origin: top;
+		transition: transform 720ms var(--ease) calc(var(--reveal-delay, 0ms) + 140ms);
+	}
+
+	.motion-ready .archive-groups section.is-revealed::before {
+		transform: scaleY(1);
+	}
+}
+
+/* ============== 焦点描边环 ============== */
+.focus-trace {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 400;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.focus-trace.is-visible {
+	opacity: 1;
+}
+
+.focus-trace.is-live {
+	transition:
+		transform 190ms var(--ease),
+		width 190ms var(--ease),
+		height 190ms var(--ease),
+		opacity 140ms ease;
+}
+
+.focus-trace i {
+	position: absolute;
+	background: var(--text);
+	transition: transform 130ms var(--ease);
+}
+
+.focus-trace i:nth-child(1) {
+	top: 0;
+	right: 0;
+	left: 0;
+	height: 2px;
+	transform-origin: left;
+}
+
+.focus-trace i:nth-child(2) {
+	top: 0;
+	right: 0;
+	bottom: 0;
+	width: 2px;
+	transform-origin: top;
+	transition-delay: 85ms;
+}
+
+.focus-trace i:nth-child(3) {
+	right: 0;
+	bottom: 0;
+	left: 0;
+	height: 2px;
+	transform-origin: right;
+	transition-delay: 170ms;
+}
+
+.focus-trace i:nth-child(4) {
+	top: 0;
+	bottom: 0;
+	left: 0;
+	width: 2px;
+	transform-origin: bottom;
+	transition-delay: 255ms;
+}
+
+.focus-trace.is-collapsed i:nth-child(1),
+.focus-trace.is-collapsed i:nth-child(3) {
+	transform: scaleX(0);
+	transition-delay: 0ms;
+}
+
+.focus-trace.is-collapsed i:nth-child(2),
+.focus-trace.is-collapsed i:nth-child(4) {
+	transform: scaleY(0);
+	transition-delay: 0ms;
+}
+
+/* 描边环接管时让原生 outline 退场;顶层 dialog 内保持原生样式。 */
+.has-focus-trace :focus-visible {
+	outline-color: transparent;
+}
+
+.has-focus-trace dialog :focus-visible {
+	outline-color: var(--text);
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.motion-ready .section-heading::after {
 		transition: none;
+	}
+
+	.focus-trace {
+		display: none;
 	}
 }
