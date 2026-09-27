@@ -15,7 +15,7 @@ const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
 
 /** 把元素的文本拆成逐字形的 span,保留换行与空白为文本节点。 */
-const splitIntoChars = (element: HTMLElement): HTMLSpanElement[] => {
+export const splitIntoChars = (element: HTMLElement): HTMLSpanElement[] => {
 	const text = element.textContent ?? '';
 	const fragment = document.createDocumentFragment();
 	const chars: HTMLSpanElement[] = [];

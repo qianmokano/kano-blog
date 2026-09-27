@@ -188,6 +188,156 @@
 	outline-color: var(--text);
 }
 
+/* ============== 游丝 Navline ============== */
+/* 一条共享发丝线在导航链接之间滑行;当前页的常驻下划线不动,
+   游丝只表达指针与焦点的即时意图。 */
+.desktop-nav {
+	position: relative;
+}
+
+.desktop-nav::before {
+	position: absolute;
+	bottom: -0.42rem;
+	left: 0;
+	width: var(--navline-width, 0);
+	height: 1px;
+	transform: translateX(var(--navline-x, 0));
+	background: var(--text);
+	content: '';
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 140ms ease;
+}
+
+.desktop-nav.has-navline::before {
+	opacity: 1;
+}
+
+.desktop-nav.is-navline-live::before {
+	transition:
+		transform 220ms var(--ease),
+		width 220ms var(--ease),
+		opacity 140ms ease;
+}
+
+/* ============== 逐字引力 Card Sweep ============== */
+/* 卡片行被悬停或聚焦时,标题字形沿阅读方向逐字加重再回落,
+   与 wordmark 的字重扫掠同一语法。宽度由 JS 钉死,加粗不发生
+   任何布局位移。 */
+.content-card :is(h2, h3) a .sweep-char {
+	display: inline-block;
+	font-variation-settings: 'wght' 560;
+	text-align: center;
+	transition: font-variation-settings 320ms var(--ease);
+	transition-delay: calc(var(--char-index, 0) * 16ms);
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.content-card:hover :is(h2, h3) a .sweep-char,
+	.content-card:has(:is(h2, h3) a:focus-visible) .sweep-char {
+		font-variation-settings: 'wght' 730;
+	}
+}
+
+/* ============== 年份滚轮 Year Odometer ============== */
+/* 每位数字是一只滚轮:0-9 字格纵排成字条,reveal 时滚到目标位。 */
+.odometer {
+	display: flex;
+}
+
+.odometer-wheel {
+	display: block;
+	height: 1lh;
+	overflow: hidden;
+}
+
+.odometer-strip {
+	display: block;
+	transition: transform 850ms var(--ease);
+}
+
+.odometer-cell {
+	display: block;
+	height: 1lh;
+}
+
+/* ============== 暗房显影 Image Develop ============== */
+/* 未缓存的图片从模糊、去色的底片状态显影到清晰。 */
+img[data-develop='pending'] {
+	filter: blur(14px) grayscale(1);
+	opacity: 0.55;
+}
+
+img[data-develop='done'] {
+	transition:
+		filter 700ms var(--ease),
+		opacity 700ms var(--ease);
+}
+
+/* ============== 页脚终章 Footer Coda ============== */
+/* 页脚进入视口时,分界线以原本的发丝色从左向右画出自己——
+   终点与原设计完全一致,只是有了来处。武装后静态边线退场,
+   无 JS 与减弱动效时它保持原样。 */
+.site-footer {
+	position: relative;
+}
+
+.site-footer.coda-armed {
+	border-top-color: transparent;
+}
+
+.site-footer::after {
+	position: absolute;
+	top: -1px;
+	left: 0;
+	width: 100%;
+	height: 1px;
+	transform: scaleX(0);
+	transform-origin: left;
+	background: var(--line);
+	content: '';
+	pointer-events: none;
+}
+
+.site-footer.is-revealed::after {
+	transform: scaleX(1);
+	transition: transform 780ms var(--ease);
+}
+
+/* ============== 文中游丝 Prose Hairline ============== */
+/* 正文链接的下划线是一根会走路的发丝:进入时从左向右画出,
+   离开时向右收回。静态的 30% 底线保持链接在文中的可识别性。 */
+@media (hover: hover) {
+	.prose a:not(:has(img, code)) {
+		background-image:
+			linear-gradient(var(--text), var(--text)),
+			linear-gradient(
+				color-mix(in srgb, var(--text) 30%, transparent),
+				color-mix(in srgb, var(--text) 30%, transparent)
+			);
+		background-repeat: no-repeat;
+		background-position:
+			100% 100%,
+			0 100%;
+		background-size:
+			0% 1px,
+			100% 1px;
+		text-decoration: none;
+		transition:
+			var(--theme-transition),
+			background-size 320ms var(--ease);
+	}
+
+	.prose a:not(:has(img, code)):is(:hover, :focus-visible) {
+		background-position:
+			0 100%,
+			0 100%;
+		background-size:
+			100% 1px,
+			100% 1px;
+	}
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.motion-ready .section-heading::after {
 		transition: none;
@@ -195,5 +345,18 @@
 
 	.focus-trace {
 		display: none;
+	}
+
+	.desktop-nav::before {
+		display: none;
+	}
+
+	.site-footer::after {
+		display: none;
+	}
+
+	img[data-develop] {
+		filter: none;
+		opacity: 1;
 	}
 }

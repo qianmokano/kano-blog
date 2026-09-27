@@ -197,12 +197,20 @@
 
 		const animateAddedResults = (links) => {
 			if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-			for (const link of links) {
-				link.animate([{ opacity: 0 }, { opacity: 1 }], {
-					duration: 160,
-					easing: 'ease-out',
-				});
-			}
+			links.forEach((link, index) => {
+				link.animate(
+					[
+						{ opacity: 0, transform: 'translateY(5px)' },
+						{ opacity: 1, transform: 'translateY(0)' },
+					],
+					{
+						duration: 240,
+						delay: Math.min(index, 7) * 26,
+						easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+						fill: 'backwards',
+					},
+				);
+			});
 		};
 
 		const loadBatch = async (id, limit = shown + pageSize, focusNew = false, action = 'search') => {
@@ -216,7 +224,7 @@
 				if (id !== requestId) return;
 				const links = data.map(renderResult).filter(Boolean);
 				results.append(...links);
-				if (action === 'more' || action === 'retry-more') animateAddedResults(links);
+				animateAddedResults(links);
 				shown += batch.length;
 				finishPendingStatus(id);
 				status.textContent = matches.length

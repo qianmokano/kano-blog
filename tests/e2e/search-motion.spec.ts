@@ -98,7 +98,7 @@ test('load-more and retry expose progress and fade only appended results', async
 		await page.evaluate(
 			() => (window as typeof window & { searchAnimations: number[] }).searchAnimations,
 		),
-	).toEqual([160]);
+	).toEqual([240]);
 
 	await page.goto('/search/?q=retry');
 	await expect(root.locator('.search-result')).toHaveCount(12);
